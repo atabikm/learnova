@@ -1,0 +1,609 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// Learnova Site administration outline (lsa-*)
+//
+// Styles the theme override of core/settings_link_page (/admin/search.php),
+// which renders the admin tree as grouped cards with a 3-column item grid.
+// Ported from the learnova_site_admin_v2_2 mock.
+//
+// Scoped under .learnova-siteadmin so nothing here can reach the settings pages
+// themselves — this sheet only dresses the outline.
+//
+// Appended to the compiled sheet by the $THEME->scss closure in config.php.
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ── Card icons ───────────────────────────────────────────────────────────────
+// Keyed on the navigation_node key, which is stable across Moodle upgrades.
+// Each entry is (FontAwesome 6 Free glyph, foreground, tint). Boost already
+// loads the font, so no extra asset is needed.
+//
+// Keys the mock did not cover are assigned an icon that matches what the
+// category actually does. Anything unmapped — a new core category, or a
+// third-party plugin adding its own — falls through to $lsa-icon-default
+// rather than rendering blank.
+$lsa-icons: (
+    // Tab roots (the synthetic "<Tab> Setting" cards).
+    "root":                 ("\f013", $info, #EEF4FF),
+    "users":                ("\f0c0", $info, #EEF4FF),
+    "courses":              ("\f02d", #9A3412, #FFF7ED),
+    "grades":               ("\f19d", #9D174D, #FDF2F8),
+    "modules":              ("\f12e", #3730A3, #EEF2FF),
+    "appearance":           ("\f53f", #6B21A8, #F3E8FF),
+    "server":               ("\f233", #374151, #F3F4F6),
+    "reports":              ("\f080", #115E59, #F0FDFA),
+    "development":          ("\f121", #374151, #F3F4F6),
+
+    // Users.
+    "accounts":             ("\f0c0", $info, #EEF4FF),
+    "roles":                ("\f3ed", #9D174D, #FDF2F8),
+    "privacy":              ("\f023", #6B21A8, #F3E8FF),
+
+    // Courses.
+    "coursedefaultsettings": ("\f1de", #9A3412, #FFF7ED),
+    "groups":               ("\f0c0", #115E59, #F0FDFA),
+    "activitychooser":      ("\f009", #3730A3, #EEF2FF),
+    "backups":              ("\f0c7", #374151, #F3F4F6),
+
+    // Grades.
+    "gradereports":         ("\f200", #9D174D, #FDF2F8),
+    "gradeimports":         ("\f019", #115E59, #F0FDFA),
+    "gradeexports":         ("\f093", #115E59, #F0FDFA),
+    "gradepenalty":         ("\f071", #92400E, #FFFBEB),
+
+    // Short-branch categories folded into General.
+    "ai":                   ("\f5dc", #6B21A8, #F3E8FF),
+    "analytics":            ("\f201", #115E59, #F0FDFA),
+    "competencies":         ("\f091", #92400E, #FFFBEB),
+    "badges":               ("\f559", #92400E, #FFFBEB),
+    "h5p":                  ("\f1b2", #3730A3, #EEF2FF),
+    "license":              ("\f15c", #374151, #F3F4F6),
+    "location":             ("\f3c5", #9A3412, #FFF7ED),
+    "login":                ("\f2f6", $info, #EEF4FF),
+    "language":             ("\f1ab", $info, #EEF4FF),
+    "messaging":            ("\f075", #115E59, #F0FDFA),
+    "payment":              ("\f09d", $success, #F0FDF4),
+    "security":             ("\f3ed", #9D174D, #FDF2F8),
+    "frontpage":            ("\f015", #9A3412, #FFF7ED),
+    "mnet":                 ("\f6ff", #374151, #F3F4F6),
+    "mobileapp":            ("\f3cd", #3730A3, #EEF2FF),
+    "unsupported":          ("\f071", #92400E, #FFFBEB),
+    "customfield":          ("\f0ae", #6B21A8, #F3E8FF),
+
+    // Plugins sub-categories.
+    "modsettings":          ("\f009", #3730A3, #EEF2FF),
+    "formatsettings":       ("\f0db", #3730A3, #EEF2FF),
+    "customfieldsettings":  ("\f0ae", #6B21A8, #F3E8FF),
+    "blocksettings":        ("\f1b2", #3730A3, #EEF2FF),
+    "authsettings":         ("\f084", #9D174D, #FDF2F8),
+    "enrolments":           ("\f234", $info, #EEF4FF),
+    "editorsettings":       ("\f304", #6B21A8, #F3E8FF),
+    "antivirussettings":    ("\f3ed", #9D174D, #FDF2F8),
+    "mlbackendsettings":    ("\f5dc", #6B21A8, #F3E8FF),
+    "filtersettings":       ("\f0b0", #374151, #F3F4F6),
+    "mediaplayers":         ("\f03d", #9A3412, #FFF7ED),
+    "fileconverterplugins": ("\f0ec", #374151, #F3F4F6),
+    "paymentgateways":      ("\f09d", $success, #F0FDF4),
+    "dataformatsettings":   ("\f1c0", #374151, #F3F4F6),
+    "portfoliosettings":    ("\f0b1", #9A3412, #FFF7ED),
+    "repositorysettings":   ("\f07b", #9A3412, #FFF7ED),
+    "qbanksettings":        ("\f059", #115E59, #F0FDFA),
+    "qbehavioursettings":   ("\f059", #115E59, #F0FDFA),
+    "qtypesettings":        ("\f059", #115E59, #F0FDFA),
+    "plagiarism":           ("\f0c5", #92400E, #FFFBEB),
+    "coursereports":        ("\f080", #115E59, #F0FDFA),
+    "reportplugins":        ("\f080", #115E59, #F0FDFA),
+    "searchplugins":        ("\f002", $info, #EEF4FF),
+    "tools":                ("\f7d9", #374151, #F3F4F6),
+    "cache":                ("\f0e7", #92400E, #FFFBEB),
+    "cachestores":          ("\f1c0", #374151, #F3F4F6),
+    "calendartype":         ("\f133", #9A3412, #FFF7ED),
+    "communicationsettings": ("\f075", #115E59, #F0FDFA),
+    "sms":                  ("\f7cd", #115E59, #F0FDFA),
+    "contentbanksettings":  ("\f07b", #9A3412, #FFF7ED),
+    "localplugins":         ("\f12e", #3730A3, #EEF2FF),
+
+    // Server.
+    "file_redactor":        ("\f070", #9D174D, #FDF2F8),
+    "taskconfig":           ("\f017", #374151, #F3F4F6),
+    "email":                ("\f0e0", $info, #EEF4FF),
+    "webservicesettings":   ("\f0c1", #3730A3, #EEF2FF),
+
+    // Reports.
+    "aireports":            ("\f5dc", #6B21A8, #F3E8FF),
+    "reportbuilder":        ("\f200", #115E59, #F0FDFA),
+
+    // Development.
+    "experimental":         ("\f0c3", #92400E, #FFFBEB),
+);
+
+// Fallback for any category not listed above.
+$lsa-icon-default: ("\f1de", $primary, #E8F8F7);
+
+// Icon sizing, matched to the mockup's 15x15 sidebar / 18x18 card icons.
+//
+// Box and glyph are set separately, because the mockup's <svg> size is not the
+// size of the art inside it. Its Heroicons sit in a "0 0 20 20" viewBox and
+// only paint about 80% of it (measured across all 25 icons: sidebar 83%, cards
+// 80%), so a declared 15px icon actually draws ~12.4px and an 18px one ~14.4px.
+//
+// FontAwesome has no such padding — a solid glyph fills ~0.875em (448/512
+// ascent) — so reusing the mockup's numbers as font-size would render the icons
+// noticeably heavier than the mockup. Working back from the drawn sizes:
+// 12.4 / 0.875 = 14px, and 14.4 / 0.875 = 16px.
+//
+// The box stays at the mockup's figure since that is what drives layout and
+// keeps every icon centred on one grid; only the glyph is scaled to match.
+$lsa-ico-sidebar-box:   15px;
+$lsa-ico-sidebar-glyph: 14px;
+$lsa-ico-card-glyph:    16px;
+
+// ── Page chrome ──────────────────────────────────────────────────────────────
+// The mockup runs the sidebar hard against the viewport edge, full height under
+// the navbar, with the page heading and the settings search inside the content
+// column to its right.
+//
+// Those two live in #page-header, which the layout renders above #region-main —
+// outside the reach of the template this page renders into. Rather than move
+// them with JS (the theme rules forbid structural JS injection, and it would
+// flicker), the sidebar is lifted out of flow with position:fixed and the whole
+// page frame is inset by its width. The header then lands in the content
+// column by itself, no DOM surgery.
+//
+// #page-header stays visible on purpose: admin_externalpage_setup() attaches
+// the settings search box to it as a header action, so hiding the header the
+// way body.learnova-cm-page does for Course Management would take the only
+// settings search with it.
+body.learnova-siteadmin-page {
+    --lsa-sidebar-w: 240px;
+
+    // Deliberately no `overflow-x: clip` here, unlike body.learnova-cm-page:
+    // that page needs it for a 100vw breakout, this one has no breakout to
+    // contain, and a clip context on an ancestor is exactly the kind of thing
+    // that can end up clipping the fixed sidebar.
+
+    // Replaced by the sidebar, or unused here. Hidden, never removed: core's
+    // secondary navigation still carries the page's nav hooks and the triggers
+    // Boost's loader clicks to resolve #link<key> deep links.
+    .secondary-navigation,
+    .breadcrumb,
+    #page-navbar,
+    .drawer-toggles {
+        display: none !important;
+    }
+
+    // Boost anchors its rules on `#page.drawers` (including media-query
+    // variants), so these need the same anchor plus the body class to win the
+    // cascade.
+    #page.drawers {
+        margin-top: 0;
+        padding-left: var(--lsa-sidebar-w);
+        padding-right: 0;
+        background: var(--learnova-bg);
+
+        // Drop Boost's boxed white card — the section cards bring their own
+        // surfaces, and the column behind them must read as page background.
+        .main-inner {
+            max-width: none;
+            margin: 0;
+            padding: 24px 32px;
+            background: transparent;
+            border: none;
+            border-radius: 0;
+            box-shadow: none;
+        }
+
+        div[role="main"] {
+            padding-left: 0;
+            padding-right: 0;
+        }
+    }
+
+    #page-content { padding-bottom: 0 !important; }
+
+    #region-main {
+        padding: 0;
+        border: none;
+        background: transparent;
+    }
+
+    // The heading and search, now acting as the content column's own header.
+    #page-header {
+        max-width: none;
+        margin-bottom: 20px;
+
+        .page-context-header { padding: 0; }
+
+        .page-header-headings,
+        h1 {
+            margin: 0;
+            font-size: 30px;
+            font-weight: 800;
+            line-height: 1.2;
+            color: var(--learnova-dark);
+        }
+
+        .header-actions-container {
+            align-items: center;
+            margin: 0;
+        }
+
+        // Settings search (core_admin/header_search_input) as the mockup's pill.
+        .simplesearchform {
+            .input-group { border-radius: 50px; overflow: hidden; }
+
+            input[type="text"] {
+                border-color: var(--learnova-border-solid);
+                border-right: 0;
+                padding-left: 16px;
+                min-width: 220px;
+            }
+            // The submit button needs no radius rule of its own: pill is the
+            // global $btn-border-radius, and the wrapper clips it anyway.
+        }
+    }
+}
+
+.learnova-siteadmin {
+    display: block;
+
+    // ── Sidebar ──────────────────────────────────────────────────────────────
+    // Out of flow so it can reach the viewport edge and run full height from a
+    // template rendered deep inside #region-main. body.learnova-siteadmin-page
+    // insets the page frame by --lsa-sidebar-w to make room; the two must stay
+    // in step. Safe as fixed because nothing above #page carries a transform,
+    // which would otherwise re-root the positioning.
+    .lsa-sidebar {
+        position: fixed;
+        top: var(--learnova-nav-height);
+        left: 0;
+        bottom: 0;
+        z-index: 1020; // Under Boost's fixed navbar ($zindex-fixed, 1030).
+        width: var(--lsa-sidebar-w);
+        padding: 18px 12px;
+        background: #fff;
+        border: 0;
+        border-right: 1px solid var(--learnova-border-solid);
+        border-radius: 0;
+        overflow-y: auto;
+        // Thin scrollbar comes from the global rule in post.scss.
+    }
+
+    .lsa-sidebar__lbl {
+        padding: 0 6px;
+        margin-bottom: 6px;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 1.2px;
+        text-transform: uppercase;
+        color: var(--learnova-stone);
+    }
+
+    .lsa-sidebar__nav {
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+    }
+
+    .lsa-sbi {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        padding: 8px 10px;
+        border-radius: var(--learnova-radius);
+        font-family: inherit;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--learnova-iron);
+        text-decoration: none;
+        transition: background 0.1s ease;
+
+        &:hover {
+            background: var(--learnova-bg);
+            color: var(--learnova-charcoal);
+            text-decoration: none;
+        }
+
+        &:focus-visible {
+            outline: 2px solid var(--learnova-teal);
+            outline-offset: -2px;
+        }
+
+        // Not .active: these are not Bootstrap tab triggers (see the template),
+        // and a deep link activates a pane through core's hidden secondary nav
+        // anyway. site_admin.js owns .is-on, derived from the pane that
+        // actually ended up visible — one signal for both routes.
+        &.is-on {
+            background: var(--learnova-mist);
+            color: var(--learnova-teal-deep);
+            font-weight: 600;
+        }
+    }
+
+    .lsa-sbi__ico {
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: $lsa-ico-sidebar-box;
+        height: $lsa-ico-sidebar-box;
+        font-size: $lsa-ico-sidebar-glyph;
+        opacity: 0.55;
+
+        &::before {
+            font-family: var(--fa-style-family, "Font Awesome 6 Free");
+            font-weight: 900;
+            font-style: normal;
+            line-height: 1;
+            content: nth($lsa-icon-default, 1);
+        }
+    }
+
+    .lsa-sbi.is-on .lsa-sbi__ico { opacity: 1; }
+
+    .lsa-sbi__lbl {
+        flex: 1 1 auto;
+        min-width: 0;
+        line-height: 1.35;
+    }
+
+    // ── Main column ──────────────────────────────────────────────────────────
+    // The sidebar is out of flow, so this simply fills the inset frame.
+    .lsa-main {
+        display: block;
+        min-width: 0;
+    }
+
+    // ── Bookmark bar ─────────────────────────────────────────────────────────
+    // A white card above the tabs holding the user's admin bookmarks as pill
+    // chips. Rendered hidden and revealed by the AMD module only when it has
+    // chips, so an empty bar never reserves space. Label-only, by request.
+    .lsa-bookmarks {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px 12px;
+        margin-bottom: 20px;
+        padding: 14px 18px;
+        background: #fff;
+        border: 1px solid var(--learnova-border-solid);
+        border-radius: 14px;
+
+        &[hidden] { display: none; }
+    }
+
+    .lsa-bookmarks__lbl {
+        flex-shrink: 0;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.6px;
+        text-transform: uppercase;
+        color: var(--learnova-stone);
+    }
+
+    .lsa-bookmarks__list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .lsa-bookmark {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 13px;
+        border-radius: 50px;
+        background: var(--learnova-mist);
+        font-size: 12px;
+        font-weight: 600;
+        line-height: 1.4;
+        color: var(--learnova-teal-deep);
+        text-decoration: none;
+        transition: background 0.12s ease;
+
+        &:hover,
+        &:focus-visible {
+            background: #d0f0ee;
+            color: var(--learnova-teal-deep);
+            text-decoration: none;
+        }
+    }
+
+    // ── Card list ────────────────────────────────────────────────────────────
+    .lsa-sections {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .lsa-section {
+        background: #fff;
+        border: 1px solid var(--learnova-border-solid);
+        border-radius: 14px;
+        overflow: hidden;
+        transition: box-shadow 0.15s ease;
+
+        &:hover {
+            box-shadow: var(--learnova-shadow-sm);
+        }
+
+        // A card is only rendered if its category has children, but every child
+        // can still be filtered out (hidden node, or no action). Rather than
+        // leaving an empty grid, drop the whole card.
+        &:not(:has(.lsa-item)) {
+            display: none;
+        }
+    }
+
+    // ── Card header ──────────────────────────────────────────────────────────
+    .lsa-section__hd {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        width: 100%;
+        padding: 16px 20px;
+        border: 0;
+        border-bottom: 1px solid var(--learnova-border-solid);
+        background: none;
+        text-align: left;
+        cursor: pointer;
+
+        &:focus-visible {
+            outline: 2px solid var(--learnova-teal);
+            outline-offset: -2px;
+        }
+    }
+
+    .lsa-section__ico {
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        font-size: $lsa-ico-card-glyph;
+
+        &::before {
+            font-family: var(--fa-style-family, "Font Awesome 6 Free");
+            font-weight: 900;
+            -moz-osx-font-smoothing: grayscale;
+            -webkit-font-smoothing: antialiased;
+            font-style: normal;
+            line-height: 1;
+            content: nth($lsa-icon-default, 1);
+        }
+
+        color: nth($lsa-icon-default, 2);
+        background: nth($lsa-icon-default, 3);
+    }
+
+    // One pass drives both surfaces: the card badge takes the glyph plus its
+    // tint, the sidebar takes the glyph alone (its colour is state-driven).
+    @each $key, $spec in $lsa-icons {
+        .lsa-section[data-key="#{$key}"] .lsa-section__ico {
+            color: nth($spec, 2);
+            background: nth($spec, 3);
+
+            &::before {
+                content: nth($spec, 1);
+            }
+        }
+
+        .lsa-sbi[data-key="#{$key}"] .lsa-sbi__ico::before {
+            content: nth($spec, 1);
+        }
+    }
+
+    .lsa-section__name {
+        flex: 1 1 auto;
+        min-width: 0;
+        font-family: var(--fn);
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--learnova-charcoal);
+    }
+
+    .lsa-section__chevron {
+        flex-shrink: 0;
+        color: var(--learnova-stone);
+        transition: transform 0.2s ease;
+
+        &::before {
+            font-family: var(--fa-style-family, "Font Awesome 6 Free");
+            font-weight: 900;
+            font-style: normal;
+            line-height: 1;
+            font-size: 13px;
+            content: "\f078"; // chevron-down
+        }
+    }
+
+    // ── Item grid ────────────────────────────────────────────────────────────
+    // Three columns, filled left to right: the fourth item wraps to a new row.
+    // The 1px rules are drawn with box-shadow rather than borders so the column
+    // count can change responsively without nth-child(3n) bookkeeping; the
+    // card's overflow:hidden clips the outer edges.
+    .lsa-section__items {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .lsa-item {
+        display: block;
+        padding: 13px 20px;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--learnova-teal-deep);
+        text-decoration: none;
+        box-shadow:
+            1px 0 0 var(--learnova-border-solid),
+            0 1px 0 var(--learnova-border-solid);
+        transition: background 0.1s ease;
+
+        &:hover,
+        &:focus-visible {
+            background: var(--learnova-mist);
+            color: var(--learnova-teal-deep);
+            text-decoration: none;
+        }
+    }
+
+    // ── Collapsed state (toggled by theme_learnovatheme/site_admin) ──────────
+    .lsa-section.is-collapsed {
+        .lsa-section__hd {
+            border-bottom-color: transparent;
+        }
+
+        .lsa-section__chevron {
+            transform: rotate(-90deg);
+        }
+
+        .lsa-section__items {
+            display: none;
+        }
+    }
+
+    // Below lg a fixed rail would eat too much of the grid, so it returns to
+    // the flow as a wrapping chip row above the panes. The matching inset on
+    // #page.drawers is released alongside it, further down.
+    @media (max-width: 991.98px) {
+        .lsa-section__items {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .lsa-sidebar {
+            position: static;
+            width: auto;
+            margin-bottom: 16px;
+            padding: 14px 12px;
+            border: 1px solid var(--learnova-border-solid);
+            border-right-width: 1px;
+            border-radius: 14px;
+            overflow: visible;
+        }
+
+        .lsa-sidebar__nav {
+            flex-direction: row;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+
+        .lsa-sbi {
+            border: 1px solid var(--learnova-border-solid);
+            border-radius: 50px;
+        }
+    }
+
+    @media (max-width: 575.98px) {
+        .lsa-section__items {
+            grid-template-columns: 1fr;
+        }
+    }
+}
+
+// Release the frame inset once the sidebar rejoins the flow above.
+@media (max-width: 991.98px) {
+    body.learnova-siteadmin-page #page.drawers {
+        padding-left: 0;
+
+        .main-inner { padding: 16px; }
+    }
+}

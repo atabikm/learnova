@@ -1,0 +1,17 @@
+{{!
+    Override of core_form/element-date_selector-inline.
+
+    The inline variant (a date used inside another group) gets the same
+    separator removal as element-date_selector, so a date row is spaced by the
+    flex `gap` wherever it appears. See element-date_time_selector.mustache for
+    the rationale.
+}}
+{{< core_form/element-template-inline }}
+    {{$element}}
+        <span class="fdate_selector d-flex align-items-center">
+        {{#element.elements}}
+            {{{html}}}
+        {{/element.elements}}
+        </span>
+    {{/element}}
+{{/ core_form/element-template-inline }}

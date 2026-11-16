@@ -1,0 +1,93 @@
+{{!
+    @template theme_learnovatheme/login_modal
+
+    Login modal body — rendered client-side via core/templates from login_modal.js.
+    Structure mirrors the v7_4 mockup: dark teal header (logo + welcome) + white
+    body (Google SSO + email/password form). Close button uses Moodle's native
+    [data-action="hide"] hook so no extra JS wiring is needed.
+
+    All icons are sourced from theme/learnovatheme/pix/icons/ for asset consistency.
+
+    Context variables (passed from login_modal.js):
+      loginurl  - string  Moodle login form action URL
+      token     - string  CSRF logintoken from Moodle login page
+      oauthurl  - string  Google OAuth2 redirect URL
+      forgoturl - string  Forgot-password page URL
+      wwwroot   - string  $CFG->wwwroot for asset paths
+}}
+<div class="lnv-modal">
+
+    <div class="lnv-modal-top">
+        <span class="lnv-modal-deco lnv-modal-deco--1" aria-hidden="true"></span>
+        <span class="lnv-modal-deco lnv-modal-deco--2" aria-hidden="true"></span>
+
+        <button type="button" class="lnv-modal-close" data-action="hide" aria-label="Close">
+            <span class="lnv-icon lnv-icon--close" aria-hidden="true"></span>
+        </button>
+
+        <div class="lnv-modal-logo">
+            <img src="{{{ wwwroot }}}/theme/learnovatheme/pix/learnova-logo-white.svg"
+                 alt="Learnova" height="20">
+        </div>
+
+        <h2 class="lnv-modal-title">Welcome Back</h2>
+        <p class="lnv-modal-sub">Sign in to your corporate learning account</p>
+    </div>
+
+    <div class="lnv-modal-body">
+
+        <a href="{{{ oauthurl }}}" class="lnv-btn-google">
+            <img src="{{{ wwwroot }}}/theme/learnovatheme/pix/icons/google.svg"
+                 class="lnv-btn-google-icon" alt="" width="18" height="18">
+            <span>Continue with Google Workspace</span>
+        </a>
+
+        <div class="lnv-divider"><span>or use corporate email</span></div>
+
+        <form action="{{{ loginurl }}}" method="post"
+              class="lnv-form" id="lnv-login-form" autocomplete="on">
+            <input type="hidden" name="logintoken" value="{{ token }}">
+            <input type="hidden" name="anchor" value="">
+
+            <div class="lnv-field">
+                <label class="lnv-label" for="lnv-username">Corporate Email</label>
+                <div class="lnv-input-wrap">
+                    <span class="lnv-input-icon lnv-icon lnv-icon--envelope" aria-hidden="true"></span>
+                    <input id="lnv-username" class="lnv-input" type="text"
+                           name="username" placeholder="name@company.com"
+                           autocomplete="username" required>
+                </div>
+            </div>
+
+            <div class="lnv-field">
+                <label class="lnv-label" for="lnv-password">Password</label>
+                <div class="lnv-input-wrap">
+                    <span class="lnv-input-icon lnv-icon lnv-icon--lock" aria-hidden="true"></span>
+                    <input id="lnv-password" class="lnv-input" type="password"
+                           name="password" placeholder="••••••••"
+                           autocomplete="current-password" required>
+                </div>
+            </div>
+
+            <div class="lnv-form-meta">
+                <label class="lnv-remember">
+                    <input type="checkbox" name="rememberusername" value="1">
+                    <span>Remember me</span>
+                </label>
+                <a href="{{{ forgoturl }}}" class="lnv-link lnv-forgot">Forgot password?</a>
+            </div>
+
+            <button type="submit" class="lnv-btn-submit">
+                <span>Sign In to Platform</span>
+                <span class="lnv-icon lnv-icon--arrow-right" aria-hidden="true"></span>
+            </button>
+        </form>
+
+        <p class="lnv-no-account">
+            No account?
+            <a href="mailto:" class="lnv-link">Contact your HR team</a>
+            for access.
+        </p>
+
+    </div>
+</div>

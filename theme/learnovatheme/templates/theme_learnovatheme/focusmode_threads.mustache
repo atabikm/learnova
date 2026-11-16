@@ -1,0 +1,81 @@
+{{!
+    @template theme_learnovatheme/focusmode_threads
+
+    Thread list of the focus-mode Activity Discussion panel. Rendered
+    server-side inside focusmode.mustache and re-rendered client-side by
+    amd/src/focus_mode.js after every post, reply or delete, so both paths
+    produce exactly the same markup.
+
+    Uses the same .fm-thread card as the forum activity view — one component,
+    two data sources.
+
+    Context, from \local_learnova_course\discussion_manager::get_threads():
+    * hasthreads - bool
+    * threads    - array of:
+      * id         - int, top-level post id
+      * title      - string, derived from the opening message
+      * snippet    - string, latest author + excerpt
+      * message    - string, pre-escaped opening message HTML
+      * meta       - string, "Started by X · time"
+      * replylabel - string, "2 replies" / "1 reply" / "No replies"
+      * replies    - array of {id, name, time, message}
+      * hasreplies - bool
+      * candelete  - bool, Teacher/Admin only
+      * canreply   - bool
+}}
+{{#threads}}
+<div class="fm-thread fm-thread--topic" data-region="fm-thread" data-postid="{{id}}">
+    <div class="fm-thread-top">
+        {{! A button, not a link: opening a topic happens in this panel, so there
+            is nowhere to navigate to. }}
+        <button type="button" class="fm-thread-title fm-thread-title--btn"
+                data-fm-action="disc-toggle" aria-expanded="false">{{title}}</button>
+        <div class="fm-thread-right">
+            <span class="fm-thread-count">{{replylabel}}</span>
+            {{#candelete}}
+            <button type="button" class="fm-thread-delete" data-fm-action="thread-delete-ask"
+                    title="{{#str}}fm_thread_delete, theme_learnovatheme{{/str}}"
+                    aria-label="{{#str}}fm_thread_delete, theme_learnovatheme{{/str}}">
+                <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M8 2a1 1 0 00-1 1v1H4a1 1 0 000 2h12a1 1 0 100-2h-3V3a1 1 0 00-1-1H8zM5 7l.7 9.1A2 2 0 007.7 18h4.6a2 2 0 002-1.9L15 7H5z" clip-rule="evenodd"/></svg>
+            </button>
+            {{/candelete}}
+        </div>
+    </div>
+    <div class="fm-thread-snip">{{snippet}}</div>
+    <div class="fm-thread-meta">{{meta}}</div>
+
+    {{#candelete}}
+    {{! Inline confirmation — in the card itself, never a modal. }}
+    <div class="fm-thread-confirm" data-region="fm-thread-confirm">
+        <span class="fm-thread-confirm-text">{{#str}}fm_thread_confirm, theme_learnovatheme{{/str}}</span>
+        <button type="button" class="fm-tc-btn fm-tc-btn--delete" data-fm-action="disc-delete-do">{{#str}}fm_thread_confirm_yes, theme_learnovatheme{{/str}}</button>
+        <button type="button" class="fm-tc-btn fm-tc-btn--cancel" data-fm-action="thread-delete-cancel">{{#str}}fm_thread_confirm_no, theme_learnovatheme{{/str}}</button>
+    </div>
+    {{/candelete}}
+
+    {{! Opening post and replies — collapsed until the topic is opened. }}
+    <div class="fm-thread-detail" data-region="fm-thread-detail">
+        <div class="fm-thread-message">{{{message}}}</div>
+        {{#replies}}
+        <div class="fm-thread-reply">
+            <div class="fm-thread-reply-meta">
+                <span class="fm-thread-reply-name">{{name}}</span>
+                <span class="fm-thread-reply-time">{{time}}</span>
+            </div>
+            <div class="fm-thread-reply-text">{{{message}}}</div>
+        </div>
+        {{/replies}}
+        {{#canreply}}
+        <button type="button" class="fm-thread-replybtn" data-fm-action="disc-reply"
+                data-postid="{{id}}" data-title="{{title}}">{{#str}}fm_disc_reply, theme_learnovatheme{{/str}}</button>
+        {{/canreply}}
+    </div>
+</div>
+{{/threads}}
+
+{{^hasthreads}}
+<div class="fm-thread-empty">
+    <div class="fm-thread-empty-title">{{#str}}fm_disc_empty, theme_learnovatheme{{/str}}</div>
+    <div class="fm-thread-empty-desc">{{#str}}fm_disc_empty_desc, theme_learnovatheme{{/str}}</div>
+</div>
+{{/hasthreads}}

@@ -1,0 +1,132 @@
+{{!
+    @template core/user_menu
+
+    Learnova override — adds a non-clickable user info header and a conditional
+    Site Administration link at the top of the dropdown.
+    All original Moodle carousel/submenu structure is preserved intact.
+
+    Additions vs core:
+      - .learnova-usermenu-header  : avatar + fullname block (non-clickable)
+      - Site Administration link   : visible only when #isadmin (from drawers.php context)
+
+    Context: same as core/user_menu plus isadmin + adminurl injected by
+    learnovatheme/layout/drawers.php.
+}}
+<div class="usermenu">
+    {{#unauthenticateduser}}
+        <span class="login ps-2">
+            {{#guest}}
+                {{#str}} loggedinasguest, core {{/str}}
+                <div class="divider border-start h-75 align-self-center mx-2"></div>
+            {{/guest}}
+            {{#url}}
+                <a href="{{url}}">{{#str}} login, core {{/str}}</a>
+            {{/url}}
+        </span>
+    {{/unauthenticateduser}}
+    {{^unauthenticateduser}}
+        <div class="dropdown show">
+            <a href="#" role="button" id="user-menu-toggle" data-bs-toggle="dropdown"
+               aria-label="{{#str}}usermenu{{/str}}"
+               aria-haspopup="true" aria-controls="user-action-menu"
+               class="btn dropdown-toggle">
+                <span class="userbutton">
+                    {{> core/user_menu_metadata }}
+                </span>
+            </a>
+            <div id="user-action-menu" class="dropdown-menu dropdown-menu-end">
+                <div id="usermenu-carousel" class="carousel slide"
+                     data-touch="false" data-interval="false" data-keyboard="false">
+                    <div class="carousel-inner">
+                        <div id="carousel-item-main" class="carousel-item active"
+                             role="menu" tabindex="-1" aria-label="{{#str}}user{{/str}}">
+
+                            {{! ── Learnova: non-clickable user info header ── }}
+                            <div class="learnova-usermenu-header" aria-hidden="true">
+                                <span class="learnova-usermenu-header__avatar">
+                                    {{#avatardata}}
+                                        {{{content}}}
+                                    {{/avatardata}}
+                                </span>
+                                <span class="learnova-usermenu-header__info">
+                                    <span class="learnova-usermenu-header__name">
+                                        {{ userfullname }}
+                                    </span>
+                                </span>
+                            </div>
+                            <div class="dropdown-divider"></div>
+
+                            {{! ── Learnova: Learner Profile ── }}
+                            <a href="{{{ config.wwwroot }}}/user/profile.php"
+                               class="dropdown-item learnova-custom-item"
+                               role="menuitem" tabindex="-1">
+                                <i class="fa-regular fa-circle-user fa-fw" aria-hidden="true"></i>
+                                {{#str}}learnerprofile, theme_learnovatheme{{/str}}
+                            </a>
+
+                            {{! ── Learnova: Dashboard ── }}
+                            <a href="{{{ config.wwwroot }}}/my"
+                               class="dropdown-item learnova-custom-item"
+                               role="menuitem" tabindex="-1">
+                                <i class="fa fa-th-large fa-fw" aria-hidden="true"></i>
+                                {{#str}}nav_dashboard, theme_learnovatheme{{/str}}
+                            </a>
+
+                            {{! ── Learnova: Home Setting (admin only) ── }}
+                            {{#isadmin}}
+                            <a href="{{{ homesetturl }}}"
+                               class="dropdown-item learnova-custom-item learnova-admin-link"
+                               role="menuitem" tabindex="-1">
+                                <i class="fa-solid fa-sliders fa-fw" aria-hidden="true"></i>
+                                {{#str}}homesetting, theme_learnovatheme{{/str}}
+                            </a>
+                            {{/isadmin}}
+
+                            {{! ── Learnova: Site Administration (admin only) ── }}
+                            {{#isadmin}}
+                            <a href="{{{ adminurl }}}"
+                               class="dropdown-item learnova-custom-item learnova-admin-link"
+                               role="menuitem" tabindex="-1">
+                                <i class="fa-solid fa-gear fa-fw" aria-hidden="true"></i>
+                                {{#str}}siteadministration, theme_learnovatheme{{/str}}
+                            </a>
+                            {{/isadmin}}
+
+                            {{! ── Original Moodle items — Log out (others hidden via CSS) ── }}
+                            {{> core/user_action_menu_items }}
+
+                        </div>
+                        {{#submenus}}
+                            <div id="carousel-item-{{id}}" role="menu"
+                                 class="carousel-item submenu" tabindex="-1"
+                                 aria-label="{{title}}">
+                                <div class="d-flex flex-column h-100">
+                                    <div class="header">
+                                        <button type="button"
+                                                class="btn btn-icon carousel-navigation-link text-decoration-none text-body"
+                                                data-carousel-target-id="carousel-item-main"
+                                                aria-label="{{#str}}usermenugoback{{/str}}">
+                                            <span class="dir-rtl-hide">{{#pix}}i/arrow-left{{/pix}}</span>
+                                            <span class="dir-ltr-hide">{{#pix}}i/arrow-right{{/pix}}</span>
+                                        </button>
+                                        <span class="ps-2" id="carousel-item-title-{{id}}">{{title}}</span>
+                                    </div>
+                                    <div class="dropdown-divider"></div>
+                                    <div class="items h-100 overflow-auto" role="menu"
+                                         aria-labelledby="carousel-item-title-{{id}}">
+                                        {{> core/user_action_menu_submenu_items }}
+                                    </div>
+                                </div>
+                            </div>
+                        {{/submenus}}
+                    </div>
+                </div>
+            </div>
+        </div>
+    {{/unauthenticateduser}}
+</div>
+{{#js}}
+    require(['core/usermenu'], function(UserMenu) {
+        UserMenu.init();
+    });
+{{/js}}

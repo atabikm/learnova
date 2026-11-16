@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<libraries>
+    <library>
+        <location>js/pdfjs</location>
+        <name>PDF.js</name>
+        <description>Client-side PDF renderer used by the focus-mode PDF viewer.</description>
+        <version>4.10.38</version>
+        <licence>Apache-2.0</licence>
+        <licenceversion>2.0</licenceversion>
+        <repository>https://github.com/mozilla/pdf.js</repository>
+    </library>
+</libraries>

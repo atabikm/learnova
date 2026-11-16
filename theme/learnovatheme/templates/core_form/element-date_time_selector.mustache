@@ -1,0 +1,30 @@
+{{!
+    Override of core_form/element-date_time_selector.
+
+    Identical to lib/form/templates/element-date_time_selector.mustache except
+    that the  between the group's elements is dropped.
+
+    Why: lib/form/group.php emits a literal `&nbsp;` between elements. The row is
+    a flex container, so each of those text nodes becomes an anonymous flex item
+    with a width of its own AND a `gap` on either side — spacing that can be
+    neither targeted nor removed from CSS. On the Course Settings embed it made
+    the dropdown spacing uneven, and on an optional date (Course end date) the
+    separator trailing the "Enable" checkbox landed at the head of the wrapped
+    line, indenting that row past the row above it.
+
+    With the separators gone, the flex `gap` in post.scss is the single source of
+    the spacing and every date row lines up. Structure only — the elements, their
+    order, the fieldset, and the accessible legend are untouched.
+}}
+{{< core_form/element-group }}
+    {{$element}}
+        <fieldset data-fieldtype="date_time" class="m-0 p-0 border-0" id="{{element.id}}">
+            <legend class="visually-hidden">{{label}}</legend>
+            <div class="fdate_time_selector d-flex flex-wrap align-items-center">
+            {{#element.elements}}
+                {{{html}}}
+            {{/element.elements}}
+            </div>
+        </fieldset>
+    {{/element}}
+{{/ core_form/element-group }}

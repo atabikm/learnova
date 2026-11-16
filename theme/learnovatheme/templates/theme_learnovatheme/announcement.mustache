@@ -1,0 +1,21 @@
+{{!
+    @template theme_learnovatheme/announcement
+
+    Front-page announcement band. Sits flush under the hero, full viewport
+    width, on a teal-mid background.
+
+    Context:
+        tag       - short uppercase pill label (e.g. "Info Program")
+        message   - description text (escaped plain string)
+        cta_label - CTA link label (e.g. "View course →"); blank hides the link
+        cta_url   - CTA href
+}}
+<aside class="learnova-announce" role="region" aria-label="{{tag}}">
+    <div class="learnova-announce__inner">
+        <span class="learnova-announce__tag">{{tag}}</span>
+        <div class="learnova-announce__text">{{message}}</div>
+        {{#cta_label}}
+            <a class="learnova-announce__cta" href="{{cta_url}}">{{cta_label}}</a>
+        {{/cta_label}}
+    </div>
+</aside>

@@ -1,0 +1,20 @@
+// ═══════════════════════════════════════════════════════════════════════════
+// EDITOR CONTENT SCSS — styles injected INSIDE the editor's editable iframe
+// ═══════════════════════════════════════════════════════════════════════════
+// Compiled by theme_config::editor_scss_to_css() because config.php declares
+// $THEME->editor_scss = ['editor']. That declaration makes Moodle look for THIS
+// file in learnovatheme and stop — it never falls back to Boost — so Boost's own
+// editor.scss has to be pulled in explicitly or the editor loses its reset.
+//
+// Scope note: this file styles the typed content only. The editor chrome
+// (menubar / toolbar / dropdowns) lives in the parent document and is styled in
+// post.scss, which never reaches in here.
+
+@import "../../boost/scss/editor";
+
+// Match the toolbar/menu scale used for the editor chrome. Deliberately set on
+// body.mce-content-body so it only lands in the TinyMCE iframe and leaves other
+// editors (plain textarea) alone.
+body.mce-content-body {
+    font-size: 13px;
+}

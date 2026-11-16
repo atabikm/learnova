@@ -1,0 +1,105 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_learnova_course/grade_overview
+
+    Course Management "Grade Overview" panel body — one learner's grade report,
+    activity rows grouped under their section header, closed by a Course Total
+    row. Teachers get a "Viewing as" learner selector (GET form back to
+    management.php, auto-submitted by the grade AMD module). Data is the native
+    gradebook.
+
+    Context: see \local_learnova_course\grade_overview::context().
+}}
+<div class="lm-card">
+    <div class="lm-card__body">
+
+        {{#regrading}}
+        {{> local_learnova_course/grade_regrading }}
+        {{/regrading}}
+
+        {{^regrading}}
+        {{#viewall}}{{^nolearners}}
+        {{! "Viewing as" learner selector — auto-submits on change (grade AMD). }}
+        <form class="lm-grade-viewas" method="get" action="{{formaction}}">
+            <input type="hidden" name="id" value="{{courseid}}">
+            <input type="hidden" name="pane" value="{{pane}}">
+            <input type="hidden" name="gtab" value="{{gtab}}">
+            <label class="lm-label" for="go-viewas">{{#str}}go_viewing_as, local_learnova_course{{/str}}</label>
+            <select class="lm-select" id="go-viewas" name="gouser" data-autosubmit>
+                {{#useroptions}}<option value="{{value}}"{{#selected}} selected{{/selected}}>{{label}}</option>{{/useroptions}}
+            </select>
+        </form>
+        {{/nolearners}}{{/viewall}}
+
+        {{#nolearners}}
+        <div class="lm-empty">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-1.13a4 4 0 10-4-4 4 4 0 004 4zm6-4a3 3 0 10-3-3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <div class="lm-empty__title">{{#str}}go_no_learners_title, local_learnova_course{{/str}}</div>
+            <div class="lm-empty__desc">{{#str}}go_no_learners_desc, local_learnova_course{{/str}}</div>
+        </div>
+        {{/nolearners}}
+
+        {{^nolearners}}
+        {{#hasitems}}
+        {{#sections}}
+        <div class="lm-grade-head">{{name}}</div>
+        {{#rows}}
+        <div class="lm-grade-row">
+            <span class="lm-grade-ico lm-grade-ico--{{typeicon}}">
+                <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"/></svg>
+            </span>
+            <span class="lm-grade-nm">
+                <span class="lm-grade-type">{{typelabel}}</span>
+                {{name}}
+            </span>
+            <span class="lm-grade-pct{{#empty}} is-empty{{/empty}}">{{percent}}</span>
+            <span class="lm-grade-rng">{{range}}</span>
+            <span class="lm-grade-fb">{{feedback}}</span>
+            <span class="lm-grade-cn">{{weight}}</span>
+        </div>
+        {{/rows}}
+        {{/sections}}
+
+        {{#total}}
+        <div class="lm-grade-total">
+            <span class="lm-grade-total__lbl">{{#str}}go_course_total, local_learnova_course{{/str}}</span>
+            <span class="lm-grade-total__val">
+                {{#empty}}{{value}}{{/empty}}
+                {{^empty}}{{value}} / {{max}} &nbsp;·&nbsp; {{percent}}{{/empty}}
+            </span>
+        </div>
+        {{/total}}
+        {{/hasitems}}
+
+        {{^hasitems}}
+        <div class="lm-empty">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <div class="lm-empty__title">{{#str}}go_no_items_title, local_learnova_course{{/str}}</div>
+            <div class="lm-empty__desc">{{#str}}go_no_items_desc, local_learnova_course{{/str}}</div>
+        </div>
+        {{/hasitems}}
+        {{/nolearners}}
+        {{/regrading}}
+
+    </div>
+</div>
+{{#js}}
+require(['local_learnova_course/grade'], function(G) {
+    G.init();
+});
+{{/js}}

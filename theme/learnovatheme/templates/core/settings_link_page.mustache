@@ -1,0 +1,190 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template core/settings_link_page
+
+    Learnova override of the Site administration outline (/admin/search.php).
+
+    Renders the same admin tree as core, but as a left sidebar plus grouped
+    cards with a 3-column item grid, instead of Boost's horizontal tab strip
+    over flat <ul> link lists. Nothing is added to or removed from the tree —
+    every node core would show is still shown, and the tab-pane ids core's
+    secondary navigation targets are preserved verbatim.
+
+    The page header is deliberately left alone: admin_externalpage_setup()
+    hangs the settings search box off it as a header action, so hiding it the
+    way body.learnova-cm-page does for Course Management would take the only
+    settings search with it.
+
+    Grouping rule, which mirrors \core\navigation\views\secondary::load_admin_navigation():
+      * A tab exists for the root plus every displayed non-short-branch child.
+      * Inside a tab, each sub-category becomes one card.
+      * Leaves hanging directly off the tab root have no category of their own,
+        so they are collected into a synthetic leading card named after the tab
+        ("Plugins" -> "Plugins Setting").
+      * Short-branch categories (< 8 leaves, no subtree) get no tab of their own
+        because core folds them into General, so they are rendered as cards in
+        the root pane and skipped in the pane loop.
+
+    A card whose grid ends up with no items is hidden in SCSS via
+    :not(:has(.lsa-item)) rather than a Mustache guard, because Mustache cannot
+    test "has at least one leaf child".
+
+    Descriptions are deliberately absent: admin_category, admin_externalpage and
+    admin_settingpage (lib/adminlib.php) expose only name/visiblename, so there
+    is no native description to render.
+
+    Example context (json):
+    {
+        "node": {
+            "text": "Root of menu",
+            "key": "test0",
+            "display": true,
+            "children": [
+                {
+                    "text": "Child of menu",
+                    "key": "test1",
+                    "display": true,
+                    "children": []
+                }
+            ]
+        }
+    }
+}}
+<div class="learnova-siteadmin">
+
+{{! ── Sidebar ───────────────────────────────────────────────────────────
+    Replaces the horizontal tab strip. Core's own secondary navigation still
+    renders (it carries the page's nav hooks) and is hidden in SCSS via
+    body.learnova-siteadmin-page — it is not removed, so deep links from nested
+    settings pages (/admin/search.php#linkusers) keep working: Boost's loader
+    clicks the matching trigger and site_admin.js adopts whichever pane ends up
+    active.
+
+    Deliberately NOT data-bs-toggle="tab": Bootstrap deactivates the previous
+    pane by looking for .active among the clicked trigger's own siblings, which
+    goes stale as soon as a second tablist (core's secondary nav) drives the
+    same panes. site_admin.js sets every pane's state explicitly instead. }}
+<aside class="lsa-sidebar">
+    <div class="lsa-sidebar__lbl">{{#str}}administrationsite, core{{/str}}</div>
+    <nav class="lsa-sidebar__nav" role="tablist" aria-orientation="vertical">
+        <a class="lsa-sbi" id="lsa-tab-{{node.key}}" data-key="{{node.key}}"
+           href="#link{{node.key}}" role="tab">
+            <span class="lsa-sbi__ico" aria-hidden="true"></span>
+            <span class="lsa-sbi__lbl">{{#str}}general, core{{/str}}</span>
+        </a>
+        {{#node.children}}
+            {{#display}}
+                {{#children.count}}
+                    {{^is_short_branch}}
+                        <a class="lsa-sbi" id="lsa-tab-{{key}}" data-key="{{key}}"
+                           href="#link{{key}}" role="tab">
+                            <span class="lsa-sbi__ico" aria-hidden="true"></span>
+                            <span class="lsa-sbi__lbl">{{text}}</span>
+                        </a>
+                    {{/is_short_branch}}
+                {{/children.count}}
+            {{/display}}
+        {{/node.children}}
+    </nav>
+</aside>
+
+<div class="lsa-main">
+    {{! ── Bookmark bar ──────────────────────────────────────────────────
+        Spans all tabs (bookmarks are global, not per-pane), so it sits above
+        the tab content, not inside a pane. Empty and hidden until the AMD
+        module fills it from the list resolved in theme_learnovatheme_page_init;
+        stays hidden when the user has no bookmarks. Label-only chips by request
+        — no per-chip icons. }}
+    <div class="lsa-bookmarks" data-region="lsa-bookmarks" hidden>
+        <span class="lsa-bookmarks__lbl">{{#str}}sa_bookmarks, theme_learnovatheme{{/str}}</span>
+        <div class="lsa-bookmarks__list" data-region="lsa-bookmarks-list"></div>
+    </div>
+
+    <div class="tab-content">
+    {{! ── General pane ─────────────────────────────────────────────────── }}
+    <div class="tab-pane active" id="link{{node.key}}" role="tabpanel" aria-labelledby="lsa-tab-{{node.key}}">
+        <div class="lsa-sections">
+            <section class="lsa-section" data-key="{{node.key}}">
+                <button type="button" class="lsa-section__hd" aria-expanded="true">
+                    <span class="lsa-section__ico" aria-hidden="true"></span>
+                    <span class="lsa-section__name">{{#str}}sa_section_general, theme_learnovatheme{{/str}}</span>
+                    <span class="lsa-section__chevron" aria-hidden="true"></span>
+                </button>
+                <div class="lsa-section__items">
+                    {{#node.children}}
+                        {{^children.count}}
+                            {{#display}}
+                                {{#action}}<a class="lsa-item" href="{{{action}}}">{{text}}</a>{{/action}}
+                            {{/display}}
+                        {{/children.count}}
+                    {{/node.children}}
+                </div>
+            </section>
+
+            {{#node.children}}
+                {{#display}}
+                    {{#children.count}}
+                        {{#is_short_branch}}
+                            {{> theme_learnovatheme/site_admin_section }}
+                        {{/is_short_branch}}
+                    {{/children.count}}
+                {{/display}}
+            {{/node.children}}
+        </div>
+    </div>
+
+    {{! ── One pane per remaining tab ───────────────────────────────────── }}
+    {{#node.children}}
+        {{#display}}
+            {{#children.count}}
+                {{^is_short_branch}}
+                    <div class="tab-pane" id="link{{key}}" role="tabpanel" aria-labelledby="lsa-tab-{{key}}">
+                        <div class="lsa-sections">
+                            <section class="lsa-section" data-key="{{key}}">
+                                <button type="button" class="lsa-section__hd" aria-expanded="true">
+                                    <span class="lsa-section__ico" aria-hidden="true"></span>
+                                    <span class="lsa-section__name">{{text}} {{#str}}sa_section_suffix, theme_learnovatheme{{/str}}</span>
+                                    <span class="lsa-section__chevron" aria-hidden="true"></span>
+                                </button>
+                                <div class="lsa-section__items">
+                                    {{#children}}
+                                        {{^children.count}}
+                                            {{#display}}
+                                                {{#action}}<a class="lsa-item" href="{{{action}}}">{{text}}</a>{{/action}}
+                                            {{/display}}
+                                        {{/children.count}}
+                                    {{/children}}
+                                </div>
+                            </section>
+
+                            {{#children}}
+                                {{#display}}
+                                    {{#children.count}}
+                                        {{> theme_learnovatheme/site_admin_section }}
+                                    {{/children.count}}
+                                {{/display}}
+                            {{/children}}
+                        </div>
+                    </div>
+                {{/is_short_branch}}
+            {{/children.count}}
+        {{/display}}
+    {{/node.children}}
+    </div>{{! .tab-content }}
+</div>{{! .lsa-main }}
+</div>{{! .learnova-siteadmin }}

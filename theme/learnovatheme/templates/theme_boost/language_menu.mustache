@@ -1,0 +1,45 @@
+{{!
+    @template theme_boost/language_menu
+
+    Learnova override — tampilkan kode bahasa singkat (mis. "EN") di tombol,
+    bukan nama panjang. Dropdown item aktif ditandai checkmark teal,
+    item lain dengan dot abu-abu.
+
+    Context variables (sama dengan Boost + tambahan dari drawers.php):
+    * langcode - Kode bahasa uppercase, mis. "EN" (ditambahkan di drawers.php)
+    * title    - Nama panjang bahasa aktif, mis. "English (en)"
+    * items[]  - Daftar bahasa tersedia
+}}
+<div class="langmenu">
+    <div class="dropdown">
+        <a href="#"
+           role="button"
+           id="lang-menu-toggle"
+           data-bs-toggle="dropdown"
+           aria-label="{{#str}}language{{/str}}"
+           aria-haspopup="true"
+           aria-controls="lang-action-menu"
+           class="learnova-lang-btn">
+            <i class="learnova-lang-icon" aria-hidden="true"></i>
+            <span class="learnova-lang-code">{{langcode}}</span>
+            <i class="learnova-lang-chev" aria-hidden="true"></i>
+        </a>
+        <div role="menu"
+             aria-labelledby="lang-menu-toggle"
+             id="lang-action-menu"
+             class="dropdown-menu dropdown-menu-end learnova-lang-menu">
+            {{#items}}
+                {{#link}}
+                    <a href="{{{url}}}"
+                       class="dropdown-item learnova-lang-item"
+                       role="menuitem"
+                       {{#isactive}}aria-current="true"{{/isactive}}
+                       {{#attributes}}{{key}}="{{value}}" {{/attributes}}>
+                        <span class="learnova-lang-indicator" aria-hidden="true"></span>
+                        {{text}}
+                    </a>
+                {{/link}}
+            {{/items}}
+        </div>
+    </div>
+</div>

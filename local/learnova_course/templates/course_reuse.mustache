@@ -1,0 +1,41 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_learnova_course/course_reuse
+
+    Course Management "Course Reuse" panel body — the shared tabbed-embed
+    component with one tab per native reuse operation (Import, Backup, Restore,
+    Reset, Copy course), plus this panel's own empty state when the viewer may
+    run none of them.
+
+    Context: see \local_learnova_course\course_reuse::context().
+}}
+{{#hastabs}}
+    {{> local_learnova_course/tabframe }}
+{{/hastabs}}
+
+{{^hastabs}}
+<div class="lm-card">
+    <div class="lm-card__body">
+        <div class="lm-empty">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16.5 8.25V6a2.25 2.25 0 00-2.25-2.25H6A2.25 2.25 0 003.75 6v8.25A2.25 2.25 0 006 16.5h2.25m8.25-8.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-7.5A2.25 2.25 0 018.25 18v-1.5m8.25-8.25h-6a2.25 2.25 0 00-2.25 2.25v6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <div class="lm-empty__title">{{#str}}cr_none_title, local_learnova_course{{/str}}</div>
+            <div class="lm-empty__desc">{{#str}}cr_none_desc, local_learnova_course{{/str}}</div>
+        </div>
+    </div>
+</div>
+{{/hastabs}}

@@ -1,0 +1,108 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_learnova_course/badges
+
+    Course Management "Badges" panel body — the course's badges as a Learnova
+    table (image, name, status, recipients), each row an entry point to that
+    badge's overview, plus a slide-in that carries the NATIVE badge form for
+    creating a new one (and for editing an existing one).
+
+    Context: see \local_learnova_course\badges::context().
+}}
+<div class="lm-card">
+    <div class="lm-card__hd">
+        <span class="lm-card__title">{{#str}}bd_title, local_learnova_course{{/str}}</span>
+        {{#canadd}}
+        <button type="button" class="lm-btn lm-btn--primary lm-btn--sm"
+            data-action="bd-add" data-url="{{addurl}}">
+            {{#str}}bd_new, local_learnova_course{{/str}}
+        </button>
+        {{/canadd}}
+    </div>
+    <div class="lm-card__body">
+
+    {{#hasrows}}
+        <div class="lm-table-wrap">
+            <table class="lm-table table-reboot">
+                <thead>
+                    <tr>
+                        <th class="lm-badge-img"></th>
+                        <th>{{#str}}bd_col_name, local_learnova_course{{/str}}</th>
+                        <th>{{#str}}bd_col_status, local_learnova_course{{/str}}</th>
+                        <th>{{#str}}bd_col_recipients, local_learnova_course{{/str}}</th>
+                        <th class="lm-table__actions">{{#str}}bd_col_actions, local_learnova_course{{/str}}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#rows}}
+                    <tr class="lm-rowlink" data-action="bd-open" data-url="{{url}}" tabindex="0">
+                        <td class="lm-badge-img"><img src="{{image}}" alt=""></td>
+                        <td>
+                            <span class="lm-table__name">{{name}}</span>
+                            <span class="lm-rowlink__hint">{{#str}}bd_open_hint, local_learnova_course{{/str}}</span>
+                        </td>
+                        <td>
+                            <span class="lm-badge{{#active}} lm-badge--success{{/active}}{{^active}} lm-badge--muted{{/active}}">{{status}}</span>
+                        </td>
+                        <td class="lm-muted">{{recipients}}</td>
+                        <td class="lm-table__actions">
+                            <button type="button" class="lm-linkbtn" data-action="bd-edit" data-url="{{editurl}}"
+                                data-name="{{name}}">{{#str}}bd_edit, local_learnova_course{{/str}}</button>
+                        </td>
+                    </tr>
+                    {{/rows}}
+                </tbody>
+            </table>
+        </div>
+    {{/hasrows}}
+
+    {{^hasrows}}
+        <div class="lm-empty">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16.5 18.75h-9m9 0a3 3 0 013 3h-15a3 3 0 013-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.007 0H9.497m5.007 0a7.454 7.454 0 01-.982-3.172M9.497 14.25a7.454 7.454 0 00.981-3.172M5.25 4.236c-.982.143-1.954.317-2.916.52A6.003 6.003 0 007.73 9.728M5.25 4.236V4.5c0 2.108.966 3.99 2.48 5.228M5.25 4.236V2.721C7.456 2.41 9.71 2.25 12 2.25c2.291 0 4.545.16 6.75.47v1.516M7.73 9.728a6.726 6.726 0 002.748 1.35m8.272-6.842V4.5c0 2.108-.966 3.99-2.48 5.228m2.48-5.492a46.32 46.32 0 012.916.52 6.003 6.003 0 01-5.395 4.972m0 0a6.726 6.726 0 01-2.749 1.35m0 0a6.772 6.772 0 01-3.044 0" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <div class="lm-empty__title">{{#str}}bd_none_title, local_learnova_course{{/str}}</div>
+            <div class="lm-empty__desc">{{#str}}bd_none_desc, local_learnova_course{{/str}}</div>
+        </div>
+    {{/hasrows}}
+
+    </div>
+</div>
+
+{{! ── Slide-in: the native badge form ─────────────────────────────────────
+    Its three sections (Badge details, Issuer details, Badge expiry) are the
+    form's own headers, so they arrive as the same collapsible cards as Course
+    Settings. No breadcrumb: the embed shell drops all page chrome. }}
+<div class="lm-slide-veil" data-region="bd-veil"></div>
+<div class="lm-slide" data-region="bd-slide" role="dialog" aria-modal="true">
+    <div class="lm-slide__top">
+        <div>
+            <div class="lm-slide__badge">{{#str}}bd_badge, local_learnova_course{{/str}}</div>
+            <div class="lm-slide__title" data-region="bd-slide-title">{{#str}}bd_new_title, local_learnova_course{{/str}}</div>
+        </div>
+        <button type="button" class="lm-slide__x" data-action="bd-close"
+            aria-label="{{#str}}closebuttontitle, core{{/str}}">
+            <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+        </button>
+    </div>
+    <iframe class="lm-slide__frame" data-region="bd-slide-frame" src="about:blank"
+        title="{{#str}}bd_new_title, local_learnova_course{{/str}}"></iframe>
+</div>
+{{#js}}
+require(['local_learnova_course/badges'], function(B) {
+    B.init();
+});
+{{/js}}

@@ -1,0 +1,294 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// Learnova SCSS Variable Overrides
+// Injected BEFORE Bootstrap compilation — overrides Bootstrap + Moodle defaults.
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ── Self-hosted brand fonts (variable woff2, served from theme/fonts/) ───────
+// Variable fonts: one file covers the full weight range, browser interpolates.
+@font-face {
+    font-family: 'DM Sans';
+    font-style: normal;
+    font-weight: 300 500;
+    font-display: swap;
+    src: url('[[font:theme|dm-sans-latin.woff2]]') format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+    font-family: 'DM Sans';
+    font-style: normal;
+    font-weight: 300 500;
+    font-display: swap;
+    src: url('[[font:theme|dm-sans-latin-ext.woff2]]') format('woff2');
+    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+    font-family: 'Plus Jakarta Sans';
+    font-style: normal;
+    font-weight: 400 800;
+    font-display: swap;
+    src: url('[[font:theme|plus-jakarta-sans-latin.woff2]]') format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+    font-family: 'Plus Jakarta Sans';
+    font-style: normal;
+    font-weight: 400 800;
+    font-display: swap;
+    src: url('[[font:theme|plus-jakarta-sans-latin-ext.woff2]]') format('woff2');
+    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// BRAND PALETTE — SINGLE SOURCE OF TRUTH
+// ═════════════════════════════════════════════════════════════════════════════
+
+// Teal ramp — the core brand identity.
+$learnova-teal:       #00B1AC !default;  // bright accent (focus, hover ring)
+$learnova-teal-deep:  #006F6C !default;  // primary
+$learnova-teal-mid:   #004E4C !default;  // primary hover/active
+$learnova-teal-abyss: #003433 !default;  // navbar brand, text on teal
+
+// Semantic colours.
+$learnova-amber: #E89400 !default;  // warning
+$learnova-blue:  #1E40AF !default;  // info
+$learnova-green: #15803D !default;  // success
+$learnova-red:   #DC2626 !default;  // danger
+
+// Tints — muted surfaces for badges, tags and hover states.
+$learnova-mist:       #E8F8F7 !default;  // teal tint
+$learnova-cream:      #FFF8EC !default;  // amber tint
+$learnova-amber-text: #7A5000 !default;  // readable amber on cream
+
+// Neutrals.
+$learnova-charcoal:   #2D2D2D !default;  // headings
+$learnova-iron:       #4A4A4A !default;  // body text
+$learnova-dark:       #111827 !default;
+$learnova-gray:       #374151 !default;
+$learnova-gray-light: #F3F4F6 !default;
+$learnova-mist-gray:  #F2F4F7 !default;  // muted surface ($light)
+$learnova-border:     rgba(0, 0, 0, 0.07) !default;
+
+// ── Bootstrap theme colours ──────────────────────────────────────────────────
+$primary:   $learnova-teal-deep !default;
+$secondary: #8f959e !default;
+$success:   $learnova-green !default;
+$info:      $learnova-blue !default;
+$warning:   $learnova-amber !default;
+$danger:    $learnova-red !default;
+$light:     $learnova-mist-gray !default;
+$dark:      $learnova-charcoal !default;
+
+// Bootstrap still derives a few colours from $pink. Redirect it to teal so no
+// pink/magenta accent survives anywhere in the Moodle components.
+$pink: $learnova-teal !default;
+
+// ── Typography ───────────────────────────────────────────────────────────────
+$font-family-sans-serif: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !default;
+$headings-font-family:   'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !default;
+
+// Base font size (Bootstrap default: 1rem = 16px).
+// 0.875rem (14px) is the scale the panels were originally tuned against; keep
+// the line around in case the 15px scale needs to be rolled back.
+$font-size-base: 0.875rem !default;  // 14px
+// $font-size-base: 0.9375rem !default;    // 15px
+$font-size-sm:   0.8125rem !default;  // 13px
+$font-size-lg:   1.0625rem !default;  // 17px
+$font-size-xs:   0.75rem !default;    // 12px
+
+$headings-font-weight: 700 !default;
+$headings-color:       $learnova-charcoal !default;
+
+// ── Body ─────────────────────────────────────────────────────────────────────
+$body-bg:    #F9FAFB !default;
+$body-color: $learnova-iron !default;
+
+// ── Links ────────────────────────────────────────────────────────────────────
+$link-color:            $learnova-teal-deep !default;
+$link-hover-color:      $learnova-teal-mid !default;
+$link-decoration:       none !default;
+$link-hover-decoration: underline !default;
+
+// ── Borders & radius ─────────────────────────────────────────────────────────
+$border-color:       $learnova-border !default;
+$border-radius:      0.5rem !default;
+$border-radius-sm:   0.375rem !default;
+$border-radius-lg:   0.75rem !default;
+$card-border-radius: 14px !default;
+
+// ── Cards ────────────────────────────────────────────────────────────────────
+// Radius comes from $card-border-radius above. Hover-lift shadow and the header
+// font have no variable — see post.scss. These control every native Moodle card
+// (our custom cards use namespaced classes and are unaffected).
+$card-border-color:    $learnova-border !default;   // rgba(0,0,0,.07), not Boost's .175
+$card-cap-bg:          #fff !default;               // white header, not the grey tint
+$card-spacer-y:        16px !default;               // .card-body padding y
+$card-spacer-x:        18px !default;               // .card-body padding x
+$card-cap-padding-y:   16px !default;               // .card-header padding y (Boost halves it)
+$card-cap-padding-x:   18px !default;               // .card-header padding x
+
+// ── Modal ────────────────────────────────────────────────────────────────────
+// 16px radius cascades to the header top / footer bottom corners via Bootstrap's
+// inner-border-radius. Asymmetric header/body/footer padding and the title font
+// have no variable — see post.scss.
+$modal-content-border-radius:    1rem !default;      // 16px
+$modal-content-border-width:     0 !default;         // border: none
+$modal-content-box-shadow-xs:    0 24px 80px rgba(0, 0, 0, 0.25) !default;
+$modal-content-box-shadow-sm-up: 0 24px 80px rgba(0, 0, 0, 0.25) !default;
+$modal-header-border-color:      $learnova-border !default;
+
+// ── Alert ────────────────────────────────────────────────────────────────────
+// Borderless muted panels. The 5 variant colours are set through the alert CSS
+// custom properties in post.scss (reusing the shared status-surface tokens).
+$alert-border-width:  0 !default;
+$alert-border-radius: 0.625rem !default;             // 10px
+
+// ── Toast ────────────────────────────────────────────────────────────────────
+$toast-border-width:            0 !default;
+$toast-border-radius:           0.625rem !default;   // 10px
+$toast-box-shadow:              0 8px 40px rgba(0, 0, 0, 0.12) !default;
+$toast-header-background-color: #fff !default;
+$toast-header-border-color:     $learnova-border !default;
+
+// ── Focus ────────────────────────────────────────────────────────────────────
+$focus-ring-color: rgba($learnova-teal, 0.25) !default;
+
+// ── Forms ────────────────────────────────────────────────────────────────────
+$input-border-color:       $learnova-border !default;
+$input-focus-border-color: $learnova-teal !default;
+$input-focus-box-shadow:   0 0 0 3px rgba($learnova-teal, 0.12) !default;
+$input-border-radius:      0.5rem !default;
+// Inputs sit one notch below body text so dense forms (Participants, Reports)
+// stay compact. This drives .form-control / .form-select / textarea.
+$input-font-size:          0.8125rem !default;  // 13px
+
+// ── Tables ───────────────────────────────────────────────────────────────────
+// Roomier cells than Bootstrap's .5rem; the header/cell typography that has no
+// variable (uppercase header, per-cell borders) lives in post.scss and shares a
+// placeholder with .lm-table. $table-border-color already resolves to
+// $border-color (rgba 0,0,0,.07) from the Borders block above.
+$table-cell-padding-y:    12px !default;
+$table-cell-padding-x:    14px !default;
+$table-cell-vertical-align: middle !default;
+
+// ── Buttons ──────────────────────────────────────────────────────────────────
+// Rounded-rectangle is the DEFAULT button shape across the whole site. Anything
+// that wants a capsule opts in with .btn-pill (post.scss).
+$btn-font-family:      $headings-font-family !default;
+$btn-font-weight:      700 !default;
+$btn-border-radius:    0.5rem !default;
+$btn-border-radius-sm: 0.375rem !default;
+$btn-border-radius-lg: 0.625rem !default;
+$btn-transition:       all 0.12s ease !default;
+
+// ── Badges ───────────────────────────────────────────────────────────────────
+// Bootstrap has no $badge-font-family — that one rule lives in post.scss.
+$badge-font-size:     10px !default;
+$badge-font-weight:   700 !default;
+$badge-padding-y:     3px !default;
+$badge-padding-x:     9px !default;
+$badge-border-radius: 50px !default;
+
+// Boost's tint for .btn-add-content hover and other soft primary surfaces.
+// Its default is shift-color($primary, -90%) ≈ #E6F1F0, slightly off-brand.
+$primary-light-background: $learnova-mist !default;
+
+// ── Dropdown ─────────────────────────────────────────────────────────────────
+// Applies to every Moodle dropdown: action menus, the user menu, filters, the
+// activity chooser. The item radius has no Bootstrap variable — see post.scss.
+$dropdown-border-radius:   0.625rem !default;              // 10px
+$dropdown-box-shadow:      0 8px 40px rgba(0, 0, 0, 0.12) !default;
+$dropdown-border-color:    $learnova-border !default;
+$dropdown-padding-y:       4px !default;
+$dropdown-padding-x:       4px !default;
+$dropdown-item-padding-y:  8px !default;
+$dropdown-item-padding-x:  12px !default;
+$dropdown-link-hover-bg:     $learnova-mist !default;
+$dropdown-link-hover-color:  $learnova-teal-deep !default;
+$dropdown-link-active-bg:    $learnova-mist !default;
+$dropdown-link-active-color: $learnova-teal-deep !default;
+
+// ── Breadcrumb ───────────────────────────────────────────────────────────────
+// Bootstrap has no $breadcrumb-link-* variable; the link colour is in post.scss.
+$breadcrumb-active-color: $learnova-iron !default;
+
+// ── Pagination ───────────────────────────────────────────────────────────────
+// Separated chips rather than one joined strip: Bootstrap only rounds the first
+// and last .page-link while $pagination-margin-start keeps its default negative
+// border-width. Any other value takes the branch that rounds every link, which
+// is why no !important is needed on the radius.
+$pagination-margin-start:       2px !default;
+$pagination-font-size:          12px !default;
+$pagination-border-radius:      6px !default;
+$pagination-padding-y:          4px !default;
+$pagination-padding-x:          10px !default;
+$pagination-hover-bg:           $learnova-mist !default;
+$pagination-hover-border-color: $learnova-teal !default;
+$pagination-hover-color:        $learnova-teal-deep !default;
+
+// ── Navbar ───────────────────────────────────────────────────────────────────
+$navbar-light-color:        $learnova-gray !default;
+$navbar-light-hover-color:  $learnova-teal-deep !default;
+$navbar-light-active-color: $learnova-teal-deep !default;
+$navbar-light-brand-color:  $learnova-teal-abyss !default;
+
+// ── Activity icons (Moodle course page) ──────────────────────────────────────
+// Moodle defaults to magenta/purple/brick-orange; remap them to the Learnova palette.
+$activity-icon-administration-bg:     $learnova-amber !default;
+$activity-icon-assessment-bg:         $learnova-amber !default;
+$activity-icon-collaboration-bg:      $learnova-blue !default;
+$activity-icon-communication-bg:      $learnova-blue !default;
+$activity-icon-content-bg:            $learnova-teal-deep !default;
+$activity-icon-interactivecontent-bg: $learnova-red !default;
+// ── Learnova activity-icon chip tints ────────────────────────────────────────
+// Background tint per activity icon-type slug (the SVG filenames in
+// pix/icons/course_landing/), grouped by learning-experience category. The
+// icon stroke colour is baked into each SVG; this map only sets the chip
+// background. Single source: consumed by the course landing
+// (.learnova-cl__act-ico, post.scss) and the Course Management activities panel
+// (.lm-actico, _management_ui.scss) — never restate a tint in a rule.
+$learnova-act-tints: (
+    // Consume / teal.
+    file:                  #E8F8F7,
+    folder:                #E8F8F7,
+    page:                  #E8F8F7,
+    url:                   #E8F8F7,
+    book:                  #E8F8F7,
+    label:                 #E8F8F7,
+    ims-package:           #E8F8F7,
+    gallery:               #E8F8F7,
+    // Assess / amber.
+    assignment:            #FFF8EC,
+    quiz:                  #FFF8EC,
+    lesson:                #FFF8EC,
+    glossary:              #FFF8EC,
+    database:              #FFF8EC,
+    journal:               #FFF8EC,
+    attendance:            #FFF8EC,
+    certificate:           #FFF8EC,
+    checklist:             #FFF8EC,
+    pdf-annotation:        #FFF8EC,
+    // Discuss / blue.
+    forum:                 #EEF4FF,
+    chat:                  #EEF4FF,
+    wiki:                  #EEF4FF,
+    workshop:              #EEF4FF,
+    peer-assessment:       #EEF4FF,
+    dialogue:              #EEF4FF,
+    // Interactive / red.
+    h5p:                   #FFF5F5,
+    h5p-interactive-video: #FFF5F5,
+    scorm:                 #FFF5F5,
+    external-tool:         #FFF5F5,
+    game:                  #FFF5F5,
+    // Live / green.
+    bigbluebutton:         #F0F9E8,
+    zoom:                  #F0F9E8,
+    teams:                 #F0F9E8,
+    google-meet:           #F0F9E8,
+    scheduler:             #F0F9E8,
+    // Feedback / purple.
+    choice:                #F3E8FF,
+    survey:                #F3E8FF,
+    feedback:              #F3E8FF,
+    questionnaire:         #F3E8FF
+) !default;

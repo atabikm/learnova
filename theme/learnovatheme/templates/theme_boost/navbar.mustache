@@ -1,0 +1,163 @@
+{{!
+    @template theme_boost/navbar
+
+    Learnova-branded navbar — overrides Boost's default.
+
+    Strategy (THEME DEVELOPMENT RULES):
+      - Custom HTML structure built in Mustache (server-side render = no flicker).
+      - ALL Moodle hooks preserved: primarymoremenu, search_box, edit_switch,
+        navbar_plugin_output, language_menu, user_menu, primary-drawer-mobile.
+        Hooks that we visually hide (primary-navigation, edit_switch) are kept
+        in DOM via CSS .visually-hidden pattern so Moodle JS still works.
+      - JS only for interactivity (login modal, chat panel) — never inject HTML.
+
+    Context provided by theme_boost layout (drawers.php):
+      sitename, config.wwwroot, config.homeurl, primarymoremenu,
+      mobileprimarynav, usermenu, langmenu, output (renderer).
+}}
+
+<nav class="navbar fixed-top learnova-navbar"
+     aria-label="{{#str}}sitemenubar, admin{{/str}}">
+    <div class="container-fluid learnova-navbar__container">
+
+        {{! ── Mobile drawer toggle ─────────────────────────────────────── }}
+        <button class="learnova-navbar__mobile-toggle d-block d-lg-none aabtn"
+                data-toggler="drawers"
+                data-action="toggle"
+                data-target="theme_boost-drawers-primary"
+                aria-label="{{#str}}sidepanel, core{{/str}}">
+            <i class="fa fa-bars fa-fw" aria-hidden="true"></i>
+        </button>
+
+        {{! ── Logo ─────────────────────────────────────────────────────── }}
+        <a href="{{{ config.homeurl }}}" class="learnova-navbar__logo aabtn d-flex align-items-center flex-shrink-0 p-0 text-decoration-none">
+            <img src="{{{ config.wwwroot }}}/theme/learnovatheme/pix/learnova-logo.svg"
+                alt="{{ sitename }}"
+                class="learnova-navbar__logo-img d-block">
+        </a>
+
+        {{! ── Custom primary nav (3 fixed links) ───────────────────────── }}
+        <ul class="learnova-navbar__nav">
+            <li>
+                <a href="{{{ config.wwwroot }}}"
+                   class="learnova-navbar__nav-link{{#nav_home_active}} active{{/nav_home_active}}"
+                   {{#nav_home_active}}aria-current="page"{{/nav_home_active}}>
+                    {{#str}}nav_home, theme_learnovatheme{{/str}}
+                </a>
+            </li>
+            <li>
+                <a href="{{{ config.wwwroot }}}/my/"
+                   class="learnova-navbar__nav-link{{#nav_dashboard_active}} active{{/nav_dashboard_active}}"
+                   {{#nav_dashboard_active}}aria-current="page"{{/nav_dashboard_active}}>
+                    {{#str}}nav_dashboard, theme_learnovatheme{{/str}}
+                </a>
+            </li>
+            <li>
+                <a href="{{{ config.wwwroot }}}/course/index.php"
+                   class="learnova-navbar__nav-link{{#nav_catalogue_active}} active{{/nav_catalogue_active}}"
+                   {{#nav_catalogue_active}}aria-current="page"{{/nav_catalogue_active}}>
+                    {{#str}}nav_catalogue, theme_learnovatheme{{/str}}
+                </a>
+            </li>
+        </ul>
+
+        {{! ── Moodle's default primary navigation (HIDDEN VIA CSS) ──────
+            Keep in DOM so Moodle's moremenu JS, keyboard nav, and overflow
+            handling still work. CSS makes it visually invisible & inert. }}
+        {{#primarymoremenu}}
+            <div class="primary-navigation learnova-navbar__moodle-hooks">
+                {{> core/moremenu }}
+            </div>
+        {{/primarymoremenu}}
+
+        {{! ── RIGHT SIDE ──────────────────────────────────────────────── }}
+        <div id="usernavigation" class="learnova-navbar__right d-flex align-items-center ms-auto gap-4">
+
+            {{! Search bar (always visible) — searches courses }}
+            <form class="learnova-navbar__search d-none d-md-flex"
+                  action="{{{ config.wwwroot }}}/course/index.php"
+                  method="get"
+                  role="search">
+                
+
+                <svg class="learnova-navbar__search-icon" viewBox="0 0 20 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+                    <path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd"></path>
+                </svg>
+
+                <input type="search"
+                       name="search"
+                       class="learnova-navbar__search-input"
+                       placeholder="Search courses, materials...">
+            </form>
+
+            {{#usermenu}}
+
+                {{! ── LOGGED-OUT: Sign In button ────────────────────── }}
+                {{#unauthenticateduser}}
+                    {{#langmenu}}
+                        <div class="learnova-navbar__divider" aria-hidden="true"></div>
+                        <div class="learnova-navbar__lang">
+                            {{> theme_boost/language_menu }}
+                        </div>
+                    {{/langmenu}}
+                    <div class="learnova-navbar__divider" aria-hidden="true"></div>
+                    <a href="{{{ url }}}"
+                       class="learnova-btn-login"
+                       data-action="learnova-login"
+                       data-url="{{{ url }}}">
+                        <i class="learnova-login-icon" aria-hidden="true"></i>
+                        <span>{{#str}}login, theme_learnovatheme{{/str}}</span>
+                    </a>
+                {{/unauthenticateduser}}
+
+                {{! ── LOGGED-IN: actions + profile ──────────────────── }}
+                {{^unauthenticateduser}}
+
+                    {{! Moodle notifications + messages plugin output.
+                        We hide the message icon via CSS (popover-region-messages)
+                        and keep only the bell (notifications). }}
+                    {{# output.navbar_plugin_output }}
+                        <div class="learnova-navbar__plugin-output">
+                            {{{ . }}}
+                        </div>
+                    {{/ output.navbar_plugin_output }}
+
+                    {{! Each cluster carries its OWN divider on the LEFT, so the
+                        separators stay consistent whether or not the language
+                        switcher / edit-mode toggle is present. }}
+                    {{#langmenu}}
+                        <div class="learnova-navbar__divider" aria-hidden="true"></div>
+                        <div class="learnova-navbar__lang">
+                            {{> theme_boost/language_menu }}
+                        </div>
+                    {{/langmenu}}
+
+                    {{! Edit-mode toggle — placed immediately left of the profile.
+                        Only renders for users who can edit (teachers/admins). }}
+                    {{#output.edit_switch}}
+                        <div class="learnova-navbar__divider" aria-hidden="true"></div>
+                        <div class="learnova-navbar__editmode">
+                            {{{ output.edit_switch }}}
+                        </div>
+                    {{/output.edit_switch}}
+
+                    {{! User-menu / profile dropdown (Site Admin auto-included for admins) }}
+                    <div class="learnova-navbar__divider" aria-hidden="true"></div>
+                    <div class="learnova-navbar__usermenu d-flex align-items-stretch"
+                         data-region="usermenu">
+                        {{> core/user_menu }}
+                    </div>
+
+                {{/unauthenticateduser}}
+
+            {{/usermenu}}
+
+        </div>
+
+    </div>
+</nav>
+
+
+
+{{! Mobile primary-drawer (Moodle native) }}
+{{> theme_boost/primary-drawer-mobile }}

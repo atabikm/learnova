@@ -1,0 +1,21 @@
+/vendor/
+/moodledata/
+/.env
+*.log
+*.swp
+.DS_Store
+.idea/
+.vscode/
+/node_modules/
+
+# MariaDB data (use named Docker volume instead)
+/mariadb-data/
+
+# Backup directories created during testing
+mariadb-data.bak/
+moodledata.bak/
+moodle.bak/
+
+# Moodle core (cloned via Docker entrypoint, not committed to repo)
+/moodle/
+.omo/

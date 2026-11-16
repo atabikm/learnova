@@ -1,0 +1,20 @@
+{{!
+    Override of core_form/element-date_selector.
+
+    Same change, same reason as our element-date_time_selector override: the
+     (&nbsp;) between the day / month / year dropdowns is
+    dropped so the flex `gap` in post.scss owns the spacing. See that file for
+    the full rationale.
+}}
+{{< core_form/element-group }}
+    {{$element}}
+        <fieldset data-fieldtype="date" class="m-0 p-0 border-0" id="{{element.id}}">
+            <legend class="visually-hidden">{{label}}</legend>
+            <span class="fdate_selector d-flex flex-wrap align-items-center">
+            {{#element.elements}}
+                {{{html}}}
+            {{/element.elements}}
+            </span>
+        </fieldset>
+    {{/element}}
+{{/ core_form/element-group }}

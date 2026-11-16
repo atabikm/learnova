@@ -1,0 +1,55 @@
+{{!
+    @template theme_learnovatheme/faq
+
+    Front-page "Common questions" (FAQ) section. Two-column band: a left image
+    card with an eyebrow / title / subtitle overlay, and a right-hand accordion
+    of Q&A pairs. Everything is edited in Home Settings (see classes/faq.php):
+    the image, the heading copy, and up to 10 question + answer pairs.
+
+    Collapsing uses Bootstrap 5.3 collapse (data attributes only) — no custom
+    JS. The chevron rotation is handled in SCSS off aria-expanded.
+
+    Context:
+        image      - background image URL for the left card
+        eyebrow    - small uppercase label (e.g. "FAQ")
+        title      - section heading
+        subtitle   - supporting line under the heading
+        items[]    - {id, question, answer}
+}}
+<section class="learnova-faq" id="learnova-faq" aria-labelledby="learnova-faq-h">
+    <div class="learnova-faq__inner">
+    <div class="learnova-faq__boxed">
+
+        <aside class="learnova-faq__media" style="background-image:url('{{image}}')">
+            <div class="learnova-faq__media-ov"></div>
+            <div class="learnova-faq__media-body">
+                {{#eyebrow}}<div class="learnova-faq__eyebrow">{{eyebrow}}</div>{{/eyebrow}}
+                <h2 class="learnova-faq__title" id="learnova-faq-h">{{title}}</h2>
+                {{#subtitle}}<p class="learnova-faq__sub">{{subtitle}}</p>{{/subtitle}}
+            </div>
+        </aside>
+
+        <div class="learnova-faq__list">
+            {{#items}}
+                <div class="learnova-faq-item">
+                    <button class="learnova-faq-item__q" type="button"
+                            data-bs-toggle="collapse" data-bs-target="#{{id}}"
+                            aria-expanded="{{#first}}true{{/first}}{{^first}}false{{/first}}" aria-controls="{{id}}">
+                        <span class="learnova-faq-item__q-text">{{question}}</span>
+                        <svg class="learnova-faq-item__chevron" xmlns="http://www.w3.org/2000/svg"
+                             width="24" height="24" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                             stroke-linejoin="round" aria-hidden="true">
+                            <path d="m6 9 6 6 6-6"></path>
+                        </svg>
+                    </button>
+                    <div id="{{id}}" class="learnova-faq-item__a collapse{{#first}} show{{/first}}">
+                        <div class="learnova-faq-item__a-inner">{{answer}}</div>
+                    </div>
+                </div>
+            {{/items}}
+        </div>
+
+    </div>
+    </div>
+</section>

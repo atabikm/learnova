@@ -1,0 +1,68 @@
+{{!
+    @template theme_learnovatheme/courses
+
+    Front-page "Latest Courses in Catalogue" section. White-background card grid
+    rendered below the Browse-by-Category band. Cards are built from real course
+    data by the same builder as the course catalogue (classes/catalogue.php), so
+    any field without data (cover image, duration, modules, …) is simply omitted.
+
+    Context:
+        title          - section heading
+        subtitle       - supporting line under the heading
+        viewall_label  - header link text (blank hides the link)
+        viewall_url    - header link href
+        cards[]        - catalogue cards: {url, title, tags[]{label,tone},
+                          hasthumb, thumb, hasduration, duration, hasmodules,
+                          modules, hasprogress, progress, footnote, btnlabel}
+}}
+<section class="learnova-courses" id="learnova-courses" aria-labelledby="learnova-courses-h">
+    <div class="learnova-courses__inner">
+    <div class="learnova-courses__boxed">
+    <div class="learnova-courses__head">
+        <div>
+            <h2 class="learnova-courses__title" id="learnova-courses-h">{{title}}</h2>
+            <p class="learnova-courses__sub">{{subtitle}}</p>
+        </div>
+        {{#viewall_label}}
+            <a class="learnova-courses__viewall" href="{{viewall_url}}">{{viewall_label}} <span>&rarr;</span></a>
+        {{/viewall_label}}
+    </div>
+
+    <div class="learnova-courses__grid">
+        {{#cards}}
+            <a class="learnova-course-card" href="{{url}}">
+                <div class="learnova-course-card__thumb {{^hasthumb}}learnova-course-card__thumb--empty{{/hasthumb}}" {{#hasthumb}}style="background-image:url('{{thumb}}')"{{/hasthumb}}>
+                    <div class="learnova-course-card__thumb-ov"></div>
+                </div>
+                <div class="learnova-course-card__body">
+                    <div class="learnova-course-card__tags">
+                        {{#tags}}
+                            <span class="learnova-course-card__tag learnova-course-card__tag--{{tone}}">{{label}}</span>
+                        {{/tags}}
+                    </div>
+                    <h3 class="learnova-course-card__title">{{title}}</h3>
+                    {{#hasduration}}
+                    <div class="learnova-course-card__meta">
+                        <span><svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a8 8 0 100 16A8 8 0 0010 2zm.75 4.75a.75.75 0 00-1.5 0v4l2.5 2.5a.75.75 0 001.06-1.06L10.75 10V6.75z"/></svg>{{duration}}</span>
+                        {{#hasmodules}}<span><svg viewBox="0 0 20 20" fill="currentColor"><path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z"/></svg>{{modules}}</span>{{/hasmodules}}
+                    </div>
+                    {{/hasduration}}
+                    {{^hasduration}}{{#hasmodules}}
+                    <div class="learnova-course-card__meta">
+                        <span><svg viewBox="0 0 20 20" fill="currentColor"><path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z"/></svg>{{modules}}</span>
+                    </div>
+                    {{/hasmodules}}{{/hasduration}}
+                    {{#hasprogress}}
+                    <div class="learnova-course-card__prog"><div class="learnova-course-card__prog-fill" style="width:{{progress}}%"></div></div>
+                    {{/hasprogress}}
+                    <div class="learnova-course-card__foot">
+                        <span class="learnova-course-card__enroll">{{footnote}}</span>
+                        <span class="learnova-course-card__btn">{{btnlabel}} <span>&rarr;</span></span>
+                    </div>
+                </div>
+            </a>
+        {{/cards}}
+    </div>
+    </div>
+    </div>
+</section>

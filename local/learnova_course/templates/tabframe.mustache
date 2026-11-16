@@ -1,0 +1,84 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_learnova_course/tabframe
+
+    Shared "tabbed embed" component: the .lm-subtabs segmented control over the
+    tab bodies. A tab is one of two kinds, and the two mix freely in one bar:
+
+      * embed  — has a `url`: a real Moodle page rendered chrome-less
+                 (?clembed=1) into the shared iframe below;
+      * local  — has `html`: markup we built ourselves (an lm-* panel), shown
+                 in place with no iframe involved.
+
+    The tabframe AMD module swaps tab state, notes, panes and the frame.
+
+    Context variables required for this template:
+    * frametitle - accessible title for the iframe
+    * tabs - [{ key, label, active, url|html, islocal, note (optional), tone (optional) }]
+    * hasembed - true when at least one tab is an embed tab (renders the iframe)
+    * activeislocal - true when the tab open on load is a local one
+
+    Example context (json):
+    {
+        "frametitle": "Grades view",
+        "hasembed": true,
+        "activeislocal": true,
+        "tabs": [
+            {"key": "grader", "label": "Grader report", "islocal": true, "active": true,
+             "html": "<div class=\"lm-card\">…</div>"},
+            {"key": "history", "label": "Grade history", "active": false,
+             "url": "/grade/report/history/index.php?id=2&clembed=1"}
+        ]
+    }
+}}
+<div data-region="lm-tabframe">
+    <div class="lm-subtabs" role="tablist">
+        {{#tabs}}
+        <button type="button" class="lm-subtab{{#active}} is-on{{/active}}" role="tab"
+            data-tf-tab="{{key}}"{{#islocal}} data-tf-local="1"{{/islocal}}{{#url}} data-url="{{url}}"{{/url}}>{{label}}</button>
+        {{/tabs}}
+    </div>
+
+    {{#tabs}}
+    {{#note}}
+    <div class="lm-notice lm-notice--{{tone}}" data-tf-note="{{key}}"{{^active}} hidden{{/active}}>{{note}}</div>
+    {{/note}}
+    {{/tabs}}
+
+    {{! Local tabs: our own markup, rendered in place. }}
+    {{#tabs}}
+    {{#islocal}}
+    <div data-tf-pane="{{key}}"{{^active}} hidden{{/active}}>{{{html}}}</div>
+    {{/islocal}}
+    {{/tabs}}
+
+    {{! Embed tabs share one iframe; it is hidden while a local tab is open. }}
+    {{#hasembed}}
+    <div class="lm-card" data-region="tf-embed"{{#activeislocal}} hidden{{/activeislocal}}>
+        <div class="lm-card__body">
+            <iframe class="learnova-cm__frame" title="{{frametitle}}"
+                data-region="tf-frame" src="about:blank" scrolling="no"></iframe>
+        </div>
+    </div>
+    {{/hasembed}}
+</div>
+{{#js}}
+require(['local_learnova_course/tabframe'], function(T) {
+    T.init();
+});
+{{/js}}

@@ -1,0 +1,52 @@
+{{!
+    @template theme_learnovatheme/cta
+
+    Front-page closing "call to action" banner. Full-width dark teal band with
+    a heading + description on the left and two action buttons on the right.
+    Mirrors the v7_4 mockup CTA section.
+
+    Button 1 swaps on auth state (resolved server-side via isguest):
+        - logged-out → "Sign In to Get Started", opens the Learnova login modal
+          (data-action="learnova-login"), full-page login as fallback.
+        - logged-in  → "Go to Dashboard", links to /my/.
+    Button 2 is always "Browse Catalogue" → course index.
+
+    Context:
+        title          - heading (Home Settings)
+        description    - supporting line (Home Settings)
+        isguest        - true when the visitor is not logged in
+        btn1_signin    - logged-out button label
+        btn1_dashboard - logged-in button label
+        btn2_label     - browse-catalogue button label
+        login_url      - login page href (modal fallback)
+        dashboard_url  - dashboard href
+        courses_url    - course catalogue href
+}}
+<section class="learnova-cta" id="learnova-cta" aria-labelledby="learnova-cta-h">
+    <div class="learnova-cta__deco learnova-cta__deco--1" aria-hidden="true"></div>
+    <div class="learnova-cta__deco learnova-cta__deco--2" aria-hidden="true"></div>
+
+    <div class="learnova-cta__inner">
+        <div class="learnova-cta__copy">
+            <h2 class="learnova-cta__title" id="learnova-cta-h">{{title}}</h2>
+            <p class="learnova-cta__sub">{{description}}</p>
+        </div>
+
+        <div class="learnova-cta__acts">
+            <a class="learnova-cta__btn learnova-cta__btn--primary" href="{{courses_url}}">
+                {{btn2_label}}
+            </a>
+            {{#isguest}}
+                <a class="learnova-cta__btn learnova-cta__btn--ghost learnova-btn-login"
+                   href="{{login_url}}" data-action="learnova-login" data-url="{{login_url}}">
+                    {{btn1_signin}}
+                </a>
+            {{/isguest}}
+            {{^isguest}}
+                <a class="learnova-cta__btn learnova-cta__btn--ghost" href="{{dashboard_url}}">
+                    {{btn1_dashboard}}
+                </a>
+            {{/isguest}}
+        </div>
+    </div>
+</section>

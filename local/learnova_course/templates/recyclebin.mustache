@@ -1,0 +1,84 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_learnova_course/recyclebin
+
+    Course Management "Recycle Bin" panel body — the activities Moodle's own
+    recycle bin (tool_recyclebin) is still holding for this course, as a
+    Learnova table: item name, when it was deleted, and the per-row Restore /
+    Delete permanently actions (routed through management.php so the user stays
+    in the panel).
+
+    Context: see \local_learnova_course\recyclebin::context().
+}}
+<div class="lm-card">
+    <div class="lm-card__body">
+
+    {{#available}}
+        {{#hasitems}}
+        {{#expiry}}<div class="lm-notice lm-notice--info">{{expiry}}</div>{{/expiry}}
+
+        <div class="lm-table-wrap">
+            <table class="lm-table table-reboot">
+                <thead>
+                    <tr>
+                        <th>{{#str}}rb_col_item, local_learnova_course{{/str}}</th>
+                        <th>{{#str}}rb_col_deleted, local_learnova_course{{/str}}</th>
+                        <th class="lm-table__actions">{{#str}}rb_col_actions, local_learnova_course{{/str}}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#items}}
+                    <tr>
+                        <td class="lm-table__name">{{name}}</td>
+                        <td class="lm-muted">{{deletedon}}</td>
+                        <td class="lm-table__actions">
+                            {{#canrestore}}<a class="lm-linkbtn" href="{{restoreurl}}">{{#str}}rb_restore, local_learnova_course{{/str}}</a>{{/canrestore}}
+                            {{#candelete}}<a class="lm-linkbtn lm-linkbtn--danger" href="{{deleteurl}}"
+                                data-action="rb-delete" data-name="{{name}}">{{#str}}rb_delete, local_learnova_course{{/str}}</a>{{/candelete}}
+                        </td>
+                    </tr>
+                    {{/items}}
+                </tbody>
+            </table>
+        </div>
+        {{/hasitems}}
+
+        {{^hasitems}}
+        <div class="lm-empty">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <div class="lm-empty__title">{{#str}}rb_empty_title, local_learnova_course{{/str}}</div>
+            <div class="lm-empty__desc">{{#str}}rb_empty_desc, local_learnova_course{{/str}}</div>
+        </div>
+        {{/hasitems}}
+    {{/available}}
+
+    {{^available}}
+        <div class="lm-empty">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <div class="lm-empty__title">{{#str}}rb_off_title, local_learnova_course{{/str}}</div>
+            <div class="lm-empty__desc">{{#str}}rb_off_desc, local_learnova_course{{/str}}</div>
+        </div>
+    {{/available}}
+
+    </div>
+</div>
+{{#js}}
+require(['local_learnova_course/recyclebin'], function(R) {
+    R.init();
+});
+{{/js}}

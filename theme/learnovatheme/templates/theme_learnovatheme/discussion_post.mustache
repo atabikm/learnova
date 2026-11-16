@@ -1,0 +1,41 @@
+{{!
+    @template theme_learnovatheme/discussion_post
+
+    One post (or 1-level reply) in the course landing Discussion tab. Rendered
+    server-side inside course_landing.mustache and client-side by
+    amd/src/course_landing.js after an AJAX post/reply, so the two stay in sync.
+
+    Context: a single row from
+    \local_learnova_course\discussion_manager::export_post():
+    * id          - int, post id
+    * isreply     - bool, indents the post as a reply
+    * name        - string, author full name
+    * initials    - string, avatar fallback
+    * avatarurl   - string, author avatar URL
+    * hasavatar   - bool
+    * isteacher   - bool, shows the "Instructor" badge
+    * time        - string, human-readable timestamp
+    * message     - string, pre-escaped HTML (line breaks only)
+    * canreply    - bool, viewer may reply (top-level posts only)
+    * candelete   - bool, viewer may delete
+}}
+<div class="learnova-cl__post{{#isreply}} learnova-cl__post--reply{{/isreply}}" data-region="cl-post" data-postid="{{id}}">
+    <div class="learnova-cl__post-av">
+        {{#hasavatar}}<img src="{{avatarurl}}" alt="">{{/hasavatar}}
+        {{^hasavatar}}{{initials}}{{/hasavatar}}
+    </div>
+    <div class="learnova-cl__post-body">
+        <div class="learnova-cl__post-meta">
+            <span class="learnova-cl__post-name">{{name}}</span>
+            {{#isteacher}}<span class="learnova-cl__post-badge">{{#str}}cl_instructor, theme_learnovatheme{{/str}}</span>{{/isteacher}}
+            <span class="learnova-cl__post-time">{{time}}</span>
+        </div>
+        <div class="learnova-cl__post-text">{{{message}}}</div>
+        {{#canreply}}
+        <button type="button" class="learnova-cl__post-action" data-action="cl-reply" data-postid="{{id}}" data-name="{{name}}">{{#str}}cl_discussion_reply, theme_learnovatheme{{/str}}</button>
+        {{/canreply}}
+        {{#candelete}}
+        <button type="button" class="learnova-cl__post-action learnova-cl__post-action--danger" data-action="cl-delete" data-postid="{{id}}">{{#str}}cl_discussion_delete, theme_learnovatheme{{/str}}</button>
+        {{/candelete}}
+    </div>
+</div>

@@ -1,0 +1,97 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_learnova_course/grader_report
+
+    Course Management "Grader Report" panel body — every gradable learner as a
+    row, one column per graded activity plus the Course Total, in a horizontally
+    scrollable Learnova table, with an "Overall average" summary row. Search is
+    a GET form back to management.php; Export CSV and "Show all" are plain links.
+    Data is the native gradebook.
+
+    Context: see \local_learnova_course\grader_report::context().
+}}
+<div class="lm-card">
+    <div class="lm-card__body">
+
+        {{#regrading}}
+        {{> local_learnova_course/grade_regrading }}
+        {{/regrading}}
+
+        {{^regrading}}
+        {{! Search + export toolbar (GET form; export/show-all are prebuilt links) }}
+        <form class="lm-toolbar" method="get" action="{{formaction}}">
+            <input type="hidden" name="id" value="{{courseid}}">
+            <input type="hidden" name="pane" value="{{pane}}">
+            <input type="hidden" name="gtab" value="{{gtab}}">
+            <input class="lm-input" type="search" name="grsearch" value="{{search}}"
+                placeholder="{{#str}}gr_search_ph, local_learnova_course{{/str}}">
+            <button class="lm-btn lm-btn--primary lm-btn--sm" type="submit">{{#str}}gr_apply, local_learnova_course{{/str}}</button>
+            <a class="lm-btn lm-btn--secondary lm-btn--sm" href="{{exporturl}}">{{#str}}gr_export, local_learnova_course{{/str}}</a>
+        </form>
+
+        {{#hasrows}}
+        <div class="lm-table-wrap lm-grader-wrap">
+            <table class="lm-table lm-grader table-reboot">
+                <thead>
+                    <tr>
+                        <th class="lm-grader__name">{{#str}}gr_col_name, local_learnova_course{{/str}}</th>
+                        <th>{{#str}}gr_col_email, local_learnova_course{{/str}}</th>
+                        {{#columns}}<th class="lm-grader__c">{{name}}</th>{{/columns}}
+                        <th class="lm-grader__c">{{#str}}gr_col_total, local_learnova_course{{/str}}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#rows}}
+                    <tr>
+                        <td>
+                            <span class="lm-ucell">
+                                <span class="lm-avatar">{{initials}}</span>
+                                <span class="lm-table__name">{{name}}</span>
+                            </span>
+                        </td>
+                        <td class="lm-muted">{{email}}</td>
+                        {{#cells}}<td class="lm-grader__s{{#na}} is-na{{/na}}">{{display}}</td>{{/cells}}
+                        <td class="lm-grader__t{{#total.na}} is-na{{/total.na}}">{{total.display}}</td>
+                    </tr>
+                    {{/rows}}
+                    <tr class="lm-grader__avg">
+                        <td colspan="2">{{#str}}gr_overall_avg, local_learnova_course{{/str}}</td>
+                        {{#averages.cells}}<td class="lm-grader__s{{#na}} is-na{{/na}}">{{display}}</td>{{/averages.cells}}
+                        <td class="lm-grader__t{{#averages.total.na}} is-na{{/averages.total.na}}">{{averages.total.display}}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="lm-grader-foot">
+            <span>{{showing}}</span>
+            {{#capped}}<a class="lm-grader-showall" href="{{showallurl}}">{{#str}}gr_show_all, local_learnova_course{{/str}}</a>{{/capped}}
+        </div>
+        {{/hasrows}}
+
+        {{^hasrows}}
+        <div class="lm-empty">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 3v18h18M18.7 8l-5.1 5.2-2.8-2.7L7 14.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <div class="lm-empty__title">{{#str}}gr_none_title, local_learnova_course{{/str}}</div>
+            <div class="lm-empty__desc">{{#str}}gr_none_desc, local_learnova_course{{/str}}</div>
+        </div>
+        {{/hasrows}}
+        {{/regrading}}
+
+    </div>
+</div>

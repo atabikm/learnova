@@ -1,0 +1,75 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_learnova_course/reset_completion
+
+    Course Management "Reset My Completion" panel body — the activities the
+    viewer has ticked complete by hand, each of which can be un-ticked. Only
+    manual completion appears: automatic completion is derived from the
+    learner's own work and would simply be recalculated.
+
+    Context: see \local_learnova_course\my_access::completion_context().
+}}
+<div class="lm-card">
+    <div class="lm-card__body">
+
+    {{^enabled}}
+        <div class="lm-empty">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <div class="lm-empty__title">{{#str}}rc_off_title, local_learnova_course{{/str}}</div>
+            <div class="lm-empty__desc">{{#str}}rc_off_desc, local_learnova_course{{/str}}</div>
+        </div>
+    {{/enabled}}
+
+    {{#enabled}}
+        {{#hasrows}}
+        <p class="lm-cp-summary">{{#str}}rc_intro, local_learnova_course{{/str}}</p>
+
+        <div data-region="rc-list">
+            {{#rows}}
+            <label class="lm-check lm-cp-pick">
+                <input type="checkbox" value="{{cmid}}" data-region="rc-pick" checked>
+                <span>{{name}}</span>
+            </label>
+            {{/rows}}
+        </div>
+
+        <div class="lm-notice lm-notice--warn">{{#str}}rc_note, local_learnova_course{{/str}}</div>
+
+        <div class="lm-btn-row">
+            <button type="button" class="lm-btn lm-btn--danger" data-action="rc-reset">
+                {{#str}}rc_reset, local_learnova_course{{/str}}
+            </button>
+        </div>
+        {{/hasrows}}
+
+        {{^hasrows}}
+        <div class="lm-empty">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <div class="lm-empty__title">{{#str}}rc_none_title, local_learnova_course{{/str}}</div>
+            <div class="lm-empty__desc">{{#str}}rc_none_desc, local_learnova_course{{/str}}</div>
+        </div>
+        {{/hasrows}}
+    {{/enabled}}
+
+    </div>
+</div>
+{{#js}}
+require(['local_learnova_course/my_access'], function(M) {
+    M.init();
+});
+{{/js}}

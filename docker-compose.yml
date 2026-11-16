@@ -1,0 +1,73 @@
+services:
+  moodle:
+    build: ./docker/moodle
+    volumes:
+      - ./moodle:/var/www/html:delegated
+      - ./moodledata:/var/www/moodledata:delegated
+      - ./local/learnovareports:/var/www/html/local/learnovareports:delegated
+      - ./blocks/learnovadashboard:/var/www/html/blocks/learnovadashboard:delegated
+      - ./mod/learnovaquiz:/var/www/html/mod/learnovaquiz:delegated
+      - ./theme/learnovatheme:/var/www/html/public/theme/learnovatheme:delegated
+      - ./local/learnova_course:/var/www/html/public/local/learnova_course:delegated
+    environment:
+      - MOODLE_DATABASE_HOST=mariadb
+      - MOODLE_DATABASE_USER=moodle
+      - MOODLE_DATABASE_PASSWORD=moodle
+      - MOODLE_DATABASE_NAME=moodle
+      - MOODLE_REPO
+      - MOODLE_BRANCH
+      - ADMINUSER
+      - ADMINPASS
+    depends_on:
+      - mariadb
+      - redis
+    networks:
+      - learnovalms
+
+  mariadb:
+    image: mariadb:11.4
+    environment:
+      - MYSQL_ROOT_PASSWORD=secret
+      - MYSQL_DATABASE=moodle
+      - MYSQL_USER=moodle
+      - MYSQL_PASSWORD=moodle
+    volumes:
+      - learnova-mariadb-data:/var/lib/mysql
+      - ./docker/mariadb/custom.cnf:/etc/mysql/conf.d/custom.cnf
+    networks:
+      - learnovalms
+
+  redis:
+    image: redis:alpine
+    networks:
+      - learnovalms
+
+  nginx:
+    image: nginx:latest
+    ports:
+      - "8080:80"
+    volumes:
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - moodle
+    networks:
+      - learnovalms
+
+  mailpit:
+    image: axllent/mailpit
+    ports:
+      - "8026:8025"
+    networks:
+      - learnovalms
+
+  dbclient:
+    image: mysql:8.0
+    command: ["sleep", "infinity"]
+    networks:
+      - learnovalms
+
+networks:
+  learnovalms:
+
+volumes:
+  learnova-mariadb-data:

@@ -1,0 +1,53 @@
+{{!
+    @template theme_learnovatheme/cat_setting
+
+    Admin-settings control for the Browse by Category item list. Renders a
+    backing textarea holding the JSON value (the only field that submits) plus
+    the scaffolding that theme_learnovatheme/cat_settings enhances into a dynamic
+    add / remove / reorder form. Category and icon options are passed as JSON in
+    data-* attributes so the JS stays language-agnostic. Icons are chosen via a
+    modal grid that shows the real SVG (not a dropdown).
+
+    Context:
+        name            - POST field name for the backing textarea
+        id              - element id for the backing textarea
+        value           - current JSON value ([{catid, icon}, ...])
+        max             - maximum number of items
+        categoriesjson  - JSON array of {id, name} category options
+        iconsjson       - JSON array of {key, label, section, sectionlabel, svg}
+        addlabel        - "Add" button text
+        removelabel     - per-row remove button text
+        uplabel         - per-row move-up button text
+        downlabel       - per-row move-down button text
+        catlabel        - Category select label
+        iconlabel       - Icon field label
+        pickerlabel     - "Choose icon" button / modal title text
+        searchph        - icon search input placeholder
+        colorlabel      - Colour field label
+        colorhint       - small hint under the colour field
+        colorreset      - "Default" reset link text
+        maxnote         - note shown when the max is reached
+        minlimit        - lower bound for the cats_max field (JS clamp)
+        maxlimit        - upper bound for the cats_max field (JS clamp)
+}}
+<div class="learnova-catset"
+     data-max="{{max}}"
+     data-min-limit="{{minlimit}}"
+     data-max-limit="{{maxlimit}}"
+     data-categories="{{categoriesjson}}"
+     data-icons="{{iconsjson}}"
+     data-remove-label="{{removelabel}}"
+     data-up-label="{{uplabel}}"
+     data-down-label="{{downlabel}}"
+     data-cat-label="{{catlabel}}"
+     data-icon-label="{{iconlabel}}"
+     data-picker-label="{{pickerlabel}}"
+     data-search-ph="{{searchph}}"
+     data-color-label="{{colorlabel}}"
+     data-color-hint="{{colorhint}}"
+     data-reset-label="{{colorreset}}">
+    <div class="learnova-catset__rows"></div>
+    <p class="learnova-catset__note text-muted small" hidden>{{maxnote}}</p>
+    <button type="button" class="btn btn-secondary btn-sm learnova-catset__add">+ {{addlabel}}</button>
+    <textarea class="learnova-catset__data form-control mt-2" name="{{name}}" id="{{id}}" rows="3" spellcheck="false">{{value}}</textarea>
+</div>

@@ -1,0 +1,146 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_learnova_course/question_banks
+
+    Course Management "Question Banks" panel body — the banks this course has as
+    a Learnova table, and below it the REAL native bank page for whichever bank
+    is open (categories, the multi-condition filter with its explicit Apply, and
+    the question list), embedded chrome-less.
+
+    Opening a bank, adding a bank and creating a question all happen without
+    leaving the page: Manage swaps the frame in place, the other two load their
+    native form into the slide-in panel.
+
+    Every row carries its own URLs so the JS never has to build one.
+
+    Context: see \local_learnova_course\question_banks::context().
+}}
+<div class="lm-card">
+    <div class="lm-card__hd">
+        <span class="lm-card__title">{{#str}}qb_banks_title, local_learnova_course{{/str}}</span>
+        {{#canadd}}
+        <button type="button" class="lm-btn lm-btn--primary lm-btn--sm"
+            data-action="qb-add" data-url="{{addurl}}">
+            {{#str}}qb_add_bank, local_learnova_course{{/str}}
+        </button>
+        {{/canadd}}
+    </div>
+    <div class="lm-card__body">
+
+    {{#hasrows}}
+        <div class="lm-table-wrap">
+            <table class="lm-table table-reboot">
+                <thead>
+                    <tr>
+                        <th>{{#str}}qb_col_bank, local_learnova_course{{/str}}</th>
+                        <th>{{#str}}qb_col_type, local_learnova_course{{/str}}</th>
+                        <th>{{#str}}qb_col_categories, local_learnova_course{{/str}}</th>
+                        <th>{{#str}}qb_col_questions, local_learnova_course{{/str}}</th>
+                        <th class="lm-table__actions">{{#str}}qb_col_actions, local_learnova_course{{/str}}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#rows}}
+                    <tr>
+                        <td class="lm-table__name">{{name}}</td>
+                        <td>
+                            <span class="lm-badge{{#shared}} lm-badge--teal{{/shared}}{{^shared}} lm-badge--muted{{/shared}}">{{typelabel}}</span>
+                        </td>
+                        <td class="lm-muted">{{categories}}</td>
+                        <td class="lm-muted">{{questions}}</td>
+                        <td class="lm-table__actions">
+                            <button type="button" class="lm-linkbtn" data-action="qb-manage"
+                                data-name="{{name}}" data-url="{{frameurl}}" data-formurl="{{formurl}}">
+                                {{#str}}qb_manage, local_learnova_course{{/str}}
+                            </button>
+                        </td>
+                    </tr>
+                    {{/rows}}
+                </tbody>
+            </table>
+        </div>
+    {{/hasrows}}
+
+    {{^hasrows}}
+        <div class="lm-empty">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <div class="lm-empty__title">{{#str}}qb_none_title, local_learnova_course{{/str}}</div>
+            <div class="lm-empty__desc">{{#str}}qb_none_desc, local_learnova_course{{/str}}</div>
+        </div>
+    {{/hasrows}}
+
+    </div>
+</div>
+
+{{! The open bank. Rendered whether or not one is open (hidden until then), so
+    Manage only has to point the frame at another bank. }}
+<div class="lm-card" data-region="qb-open"{{^hasopen}} hidden{{/hasopen}}>
+    <div class="lm-card__hd">
+        <span class="lm-card__title" data-region="qb-open-name">{{openname}}</span>
+        <button type="button" class="lm-btn lm-btn--primary lm-btn--sm"
+            data-action="qb-new" data-formurl="{{formurl}}"{{^formurl}} hidden{{/formurl}}>
+            {{#str}}qb_new_question, local_learnova_course{{/str}}
+        </button>
+    </div>
+    <div class="lm-card__body">
+        {{! The native bank page: categories, the multi-condition filter (with
+            Moodle's own explicit Apply) and the question list. }}
+        <iframe class="learnova-cm__frame" title="{{#str}}qb_banks_title, local_learnova_course{{/str}}"
+            data-region="qb-frame" data-src="{{frameurl}}" src="about:blank"
+            scrolling="no"></iframe>
+    </div>
+</div>
+
+{{! ── Slide-in ────────────────────────────────────────────────────────────
+    One panel, two uses: adding a bank loads the native activity form straight
+    away, creating a question shows our question-type chooser first (like the
+    course landing's add-activity panel) and then the native form for that type,
+    so every type gets its own proper fields. }}
+<div class="lm-slide-veil" data-region="qb-veil"></div>
+<div class="lm-slide" data-region="qb-slide" role="dialog" aria-modal="true">
+    <div class="lm-slide__top">
+        <div>
+            <div class="lm-slide__badge" data-region="qb-slide-badge">{{#str}}qb_new_question_badge, local_learnova_course{{/str}}</div>
+            <div class="lm-slide__title" data-region="qb-slide-title">{{#str}}qb_new_question_title, local_learnova_course{{/str}}</div>
+        </div>
+        <button type="button" class="lm-slide__x" data-action="qb-close"
+            aria-label="{{#str}}closebuttontitle, core{{/str}}">
+            <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+        </button>
+    </div>
+
+    <div class="lm-slide__body" data-region="qb-chooser" hidden>
+        <p class="lm-hint">{{#str}}qb_choose_type, local_learnova_course{{/str}}</p>
+        <div class="lm-qtypes">
+            {{#qtypes}}
+            <button type="button" class="lm-qtype" data-action="qb-qtype" data-qtype="{{name}}">
+                <img src="{{icon}}" alt="">
+                <span>{{label}}</span>
+            </button>
+            {{/qtypes}}
+        </div>
+    </div>
+
+    <iframe class="lm-slide__frame" data-region="qb-slide-frame" src="about:blank"
+        title="{{#str}}qb_new_question_title, local_learnova_course{{/str}}" hidden></iframe>
+</div>
+{{#js}}
+require(['local_learnova_course/qbank'], function(Q) {
+    Q.init();
+});
+{{/js}}

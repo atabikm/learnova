@@ -1,0 +1,147 @@
+{{!
+    @template theme_learnovatheme/focusmode_document
+
+    Per-type extras that sit at the top of the focus-mode reading card, built by
+    classes/focus_document.php. Everything here is chrome around Moodle's own
+    activity output; only the Forum thread list replaces it, and only when
+    focus_document::forum() judged the forum plain enough to represent.
+
+    Context:
+    * book   - chapter navigation + print action (mod_book)
+    * assign - dates banner, plus a grading summary for staff (mod_assign)
+    * forum  - discussion cards + "Add discussion topic" (mod_forum)
+}}
+
+{{#book.has}}
+{{! ══ BOOK: chapter navigation ══
+    Chapter label plus prev/next. Print is not here — it sits under the
+    content, per mockup.
+
+    The chapter list joins the arrows rather than the label: all three do the
+    same job — move between chapters — so they read as one control group, and
+    the label stays a label. It is a menu rather than a rail because the left
+    sidebar is already the course table of contents, and a second standing list
+    would compete with it. }}
+<div class="fm-book-nav">
+    <div class="fm-book-chapter">
+        {{#book.hasparent}}<span class="fm-book-parent">{{book.parenttitle}}</span><span class="fm-book-sep">·</span>{{/book.hasparent}}{{book.title}}
+    </div>
+    <div class="fm-book-arrows">
+        {{#book.haschapters}}
+        <div class="fm-book-tocwrap" data-region="fm-book-toc">
+            <button type="button" class="fm-book-arrow fm-book-arrow--toc"
+                    data-fm-action="toggle-booktoc" aria-expanded="false" aria-controls="fmBookToc"
+                    aria-haspopup="true" title="{{#str}}fm_book_toc_open, theme_learnovatheme{{/str}}"
+                    aria-label="{{#str}}fm_book_toc_open, theme_learnovatheme{{/str}}">
+                <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M3 5a1 1 0 011-1h1a1 1 0 010 2H4a1 1 0 01-1-1zm4 0a1 1 0 011-1h8a1 1 0 110 2H8a1 1 0 01-1-1zm-4 5a1 1 0 011-1h1a1 1 0 110 2H4a1 1 0 01-1-1zm4 0a1 1 0 011-1h8a1 1 0 110 2H8a1 1 0 01-1-1zm-4 5a1 1 0 011-1h1a1 1 0 110 2H4a1 1 0 01-1-1zm4 0a1 1 0 011-1h8a1 1 0 110 2H8a1 1 0 01-1-1z" clip-rule="evenodd"/></svg>
+            </button>
+            <div class="fm-book-toc" id="fmBookToc" role="menu"
+                 aria-label="{{#str}}fm_book_toc, theme_learnovatheme{{/str}}">
+                <div class="fm-book-toc-eyebrow">{{#str}}fm_book_toc, theme_learnovatheme{{/str}}</div>
+                {{#book.chapters}}
+                <a class="fm-book-toc-item{{#iscurrent}} is-current{{/iscurrent}}{{#issub}} is-sub{{/issub}}{{#ishidden}} is-hidden{{/ishidden}}"
+                   href="{{url}}" role="menuitem"{{#iscurrent}} aria-current="true"{{/iscurrent}}>
+                    <span class="fm-book-toc-mark" aria-hidden="true"></span>
+                    <span class="fm-book-toc-title">{{title}}</span>
+                    {{#ishidden}}<span class="fm-book-toc-tag">{{#str}}fm_book_chapter_hidden, theme_learnovatheme{{/str}}</span>{{/ishidden}}
+                </a>
+                {{/book.chapters}}
+            </div>
+        </div>
+        {{/book.haschapters}}
+        {{#book.hasprev}}
+        <a class="fm-book-arrow" href="{{book.prevurl}}" title="{{#str}}fm_book_prev, theme_learnovatheme{{/str}}"
+           aria-label="{{#str}}fm_book_prev, theme_learnovatheme{{/str}}">
+            <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+        </a>
+        {{/book.hasprev}}
+        {{^book.hasprev}}<span class="fm-book-arrow is-off" aria-hidden="true">
+            <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+        </span>{{/book.hasprev}}
+        {{#book.hasnext}}
+        <a class="fm-book-arrow" href="{{book.nexturl}}" title="{{#str}}fm_book_next, theme_learnovatheme{{/str}}"
+           aria-label="{{#str}}fm_book_next, theme_learnovatheme{{/str}}">
+            <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg>
+        </a>
+        {{/book.hasnext}}
+        {{^book.hasnext}}<span class="fm-book-arrow is-off" aria-hidden="true">
+            <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg>
+        </span>{{/book.hasnext}}
+    </div>
+</div>
+{{/book.has}}
+
+{{#assign}}
+{{! ══ ASSIGNMENT: dates banner ══
+    The Opened/Due dates live in Moodle's activity-dates block, which the focus
+    layout never renders — so this is the only place they appear, not a repeat
+    of the native submission table. Label above value, per mockup. }}
+<div class="fm-status-banner">
+    {{#hasopened}}
+    <div class="fm-status-item">
+        <span class="fm-status-key">{{#str}}fm_assign_opened, theme_learnovatheme{{/str}}</span>
+        <span class="fm-status-val">{{opened}}</span>
+    </div>
+    {{/hasopened}}
+    {{#hasdue}}
+    <div class="fm-status-item">
+        <span class="fm-status-key">{{#str}}fm_assign_due, theme_learnovatheme{{/str}}</span>
+        <span class="fm-status-val">{{due}}</span>
+    </div>
+    {{/hasdue}}
+    {{#hasremaining}}
+    <div class="fm-status-item">
+        <span class="fm-status-key">{{#str}}fm_assign_left, theme_learnovatheme{{/str}}</span>
+        {{^isoverdue}}<span class="fm-status-val">{{remaining}}</span>{{/isoverdue}}
+        {{#isoverdue}}<span class="fm-status-val is-overdue">{{#str}}fm_assign_overdue, theme_learnovatheme, {{remaining}}{{/str}}</span>{{/isoverdue}}
+    </div>
+    {{/hasremaining}}
+</div>
+{{/assign}}
+
+{{#forum}}
+{{! ══ FORUM: discussion cards ══ }}
+<div class="fm-threads" data-region="fm-threads">
+    {{#threads}}
+    <div class="fm-thread" data-region="fm-thread" data-discussionid="{{id}}">
+        <div class="fm-thread-top">
+            <a class="fm-thread-title" href="{{url}}">{{name}}</a>
+            <div class="fm-thread-right">
+                <span class="fm-thread-count">{{replylabel}}</span>
+                {{#candelete}}
+                <button type="button" class="fm-thread-delete" data-fm-action="thread-delete-ask"
+                        title="{{#str}}fm_thread_delete, theme_learnovatheme{{/str}}"
+                        aria-label="{{#str}}fm_thread_delete, theme_learnovatheme{{/str}}">
+                    <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M8 2a1 1 0 00-1 1v1H4a1 1 0 000 2h12a1 1 0 100-2h-3V3a1 1 0 00-1-1H8zM5 7l.7 9.1A2 2 0 007.7 18h4.6a2 2 0 002-1.9L15 7H5z" clip-rule="evenodd"/></svg>
+                </button>
+                {{/candelete}}
+            </div>
+        </div>
+        <div class="fm-thread-snip">{{snippet}}</div>
+        <div class="fm-thread-meta">{{meta}}</div>
+        {{#candelete}}
+        {{! Inline confirmation — no modal, per the interaction spec. }}
+        <div class="fm-thread-confirm" data-region="fm-thread-confirm">
+            <span class="fm-thread-confirm-text">{{#str}}fm_thread_confirm, theme_learnovatheme{{/str}}</span>
+            <button type="button" class="fm-tc-btn fm-tc-btn--delete" data-fm-action="thread-delete-do">{{#str}}fm_thread_confirm_yes, theme_learnovatheme{{/str}}</button>
+            <button type="button" class="fm-tc-btn fm-tc-btn--cancel" data-fm-action="thread-delete-cancel">{{#str}}fm_thread_confirm_no, theme_learnovatheme{{/str}}</button>
+        </div>
+        {{/candelete}}
+    </div>
+    {{/threads}}
+
+    {{^hasthreads}}
+    <div class="fm-thread-empty">
+        <div class="fm-thread-empty-title">{{#str}}fm_thread_empty, theme_learnovatheme{{/str}}</div>
+        <div class="fm-thread-empty-desc">{{#str}}fm_thread_empty_desc, theme_learnovatheme{{/str}}</div>
+    </div>
+    {{/hasthreads}}
+</div>
+
+{{#canstart}}
+<a class="fm-amber-btn" href="{{createurl}}">
+    <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/></svg>
+    {{#str}}fm_thread_add, theme_learnovatheme{{/str}}
+</a>
+{{/canstart}}
+{{/forum}}

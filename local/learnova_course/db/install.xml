@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="local/learnova_course/db" VERSION="20260625" COMMENT="Learnova course custom fields storage."
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
+>
+  <TABLES>
+    <TABLE NAME="learnova_course_meta" COMMENT="One row per course holding Learnova extension fields shown on the course settings form.">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="FK to course.id, unique."/>
+        <FIELD NAME="learning_hours_minutes" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="60" SEQUENCE="false" COMMENT="Estimated learning time in minutes."/>
+        <FIELD NAME="course_level" TYPE="char" LENGTH="20" NOTNULL="true" DEFAULT="beginner" SEQUENCE="false" COMMENT="beginner|intermediate|advanced."/>
+        <FIELD NAME="learning_objectives" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="One learning objective per line; rendered as the course landing About tab checklist."/>
+        <FIELD NAME="cert_enabled" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Generate certificate on completion: 0=no, 1=yes."/>
+        <FIELD NAME="cert_template_id" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Certificate Builder template id, 0=Default."/>
+        <FIELD NAME="cert_issuer" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Name/title printed on the certificate."/>
+        <FIELD NAME="cert_validity_days" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Certificate validity in days, 0=no expiry."/>
+        <FIELD NAME="learnova_annc_enabled" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Show the course announcement band: 0=no, 1=yes."/>
+        <FIELD NAME="learnova_annc_tier" TYPE="char" LENGTH="20" NOTNULL="true" DEFAULT="info" SEQUENCE="false" COMMENT="Announcement semantic tier: urgent|warning|info."/>
+        <FIELD NAME="learnova_annc_text" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Announcement body shown in the course landing band."/>
+        <FIELD NAME="learnova_annc_start" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Unix start time; 0=show immediately while enabled."/>
+        <FIELD NAME="learnova_annc_end" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Unix end time; 0=show indefinitely while enabled."/>
+        <FIELD NAME="learnova_annc_scope" TYPE="char" LENGTH="20" NOTNULL="true" DEFAULT="all" SEQUENCE="false" COMMENT="Visibility scope: all|enrolled."/>
+        <FIELD NAME="deadline_type" TYPE="char" LENGTH="20" NOTNULL="true" DEFAULT="enrollment" SEQUENCE="false" COMMENT="enrollment|coursestart|courseend."/>
+        <FIELD NAME="deadline_days" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="30" SEQUENCE="false" COMMENT="Days for deadline when deadline_type=enrollment."/>
+        <FIELD NAME="notif_reminder_days" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="7" SEQUENCE="false" COMMENT="Days after enrollment to remind if incomplete."/>
+        <FIELD NAME="notif_repeat_days" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="3" SEQUENCE="false" COMMENT="Reminder repeat interval in days."/>
+        <FIELD NAME="notif_channels" TYPE="char" LENGTH="50" NOTNULL="true" DEFAULT="email,push" SEQUENCE="false" COMMENT="CSV of channels: email,push."/>
+        <FIELD NAME="learnova_discussion_enabled" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Show the course-level Discussion tab on the course landing: 0=no, 1=yes."/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="courseid" TYPE="foreign-unique" FIELDS="courseid" REFTABLE="course" REFFIELDS="id"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="learnova_discussion_posts" COMMENT="Posts and 1-level replies for the custom Discussion engine (Plan B), shared by the course landing tab (cmid=0) and the focus-mode Activity Discussion panel (cmid&gt;0). Soft-deleted, never hard-deleted.">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="FK to course.id the post belongs to."/>
+        <FIELD NAME="cmid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Course module the post is scoped to; 0 = the course-level discussion."/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="FK to user.id, the author."/>
+        <FIELD NAME="parentid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="0 for a top-level post; otherwise the id of the top-level post being replied to (1 level only)."/>
+        <FIELD NAME="message" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="Plain-text message body."/>
+        <FIELD NAME="deleted" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Soft-delete flag: 0=visible, 1=deleted."/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="courseid" TYPE="foreign" FIELDS="courseid" REFTABLE="course" REFFIELDS="id"/>
+        <KEY NAME="userid" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="courseid-cmid-deleted-timecreated" UNIQUE="false" FIELDS="courseid, cmid, deleted, timecreated"/>
+      </INDEXES>
+    </TABLE>
+  </TABLES>
+</XMLDB>

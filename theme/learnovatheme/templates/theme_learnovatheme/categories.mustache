@@ -1,0 +1,44 @@
+{{!
+    @template theme_learnovatheme/categories
+
+    Front-page "Browse by Category" section. Compact card grid rendered between
+    the announcement and the page content. Data comes from native course
+    categories, chosen + ordered + icon-assigned in Home Settings (see
+    classes/categories.php). Mirrors the v7_4 mockup: small white cards with a
+    pastel icon tile, category name and live course count.
+
+    Context:
+        title          - section heading
+        subtitle       - supporting line under the heading
+        viewall_label  - header link text (blank hides the link)
+        viewall_url    - header link href
+        cards[]        - {name, count, url, iconsvg, hasicon, iconcolor, tilecolor}
+        cols           - grid column count (card-layout design: max 5 cols / 2 rows)
+}}
+<section class="learnova-cats" id="learnova-cats" aria-labelledby="learnova-cats-h">
+    <div class="learnova-cats__inner">
+    <div class="learnova-cats__boxed">
+    <div class="learnova-cats__head">
+        <div>
+            <h2 class="learnova-cats__title" id="learnova-cats-h">{{title}}</h2>
+            <p class="learnova-cats__sub">{{subtitle}}</p>
+        </div>
+        {{#viewall_label}}
+            <a class="learnova-cats__viewall" href="{{viewall_url}}">{{viewall_label}} <span>&rarr;</span></a>
+        {{/viewall_label}}
+    </div>
+
+    <div class="learnova-cats__grid" style="--cat-cols: {{cols}};">
+        {{#cards}}
+            <a class="learnova-cat-card" href="{{url}}">
+                <div class="learnova-cat-card__icon" style="background: {{tilecolor}}; color: {{iconcolor}};">
+                    {{#hasicon}}{{{ iconsvg }}}{{/hasicon}}
+                </div>
+                <h3 class="learnova-cat-card__name">{{name}}</h3>
+                <div class="learnova-cat-card__count">{{count}}</div>
+            </a>
+        {{/cards}}
+    </div>
+    </div>
+    </div>
+</section>

@@ -1,0 +1,64 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template theme_learnovatheme/site_admin_section
+
+    One Site administration card: an admin category rendered as a collapsible
+    header plus a 3-column grid of its pages. Included from the Learnova
+    override of core/settings_link_page with an admin_category navigation_node
+    as its context.
+
+    data-key carries the node key so SCSS can pick the card's icon and tint;
+    unmapped keys fall back to a neutral default.
+
+    Every displayed child gets exactly one tile, whether it is a settings page
+    or a nested category — the admin tree runs four levels deep (Plugins >
+    Activity modules > Assignment > Submission plugins > ...) and flattening
+    that would bury a hundred plugin settings in one card. A nested category
+    links to its own category.php listing instead, which keeps this page an
+    outline of where settings live rather than the settings themselves.
+
+    Example context (json):
+    {
+        "key": "accounts",
+        "text": "Accounts",
+        "display": true,
+        "children": [
+            {
+                "text": "Browse list of users",
+                "key": "editusers",
+                "display": true,
+                "action": "https://example.com/admin/user.php",
+                "children": []
+            }
+        ]
+    }
+}}
+<section class="lsa-section" data-key="{{key}}">
+    <button type="button" class="lsa-section__hd" aria-expanded="true">
+        <span class="lsa-section__ico" aria-hidden="true"></span>
+        <span class="lsa-section__name">{{text}}</span>
+        <span class="lsa-section__chevron" aria-hidden="true"></span>
+    </button>
+    <div class="lsa-section__items">
+        {{#children}}
+            {{#display}}
+                {{#action}}<a class="lsa-item" href="{{{action}}}">{{text}}</a>{{/action}}
+            {{/display}}
+        {{/children}}
+    </div>
+</section>

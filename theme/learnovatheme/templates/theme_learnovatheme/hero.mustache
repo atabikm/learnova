@@ -1,0 +1,116 @@
+{{!
+    @template theme_learnovatheme/hero
+
+    Learnova front-page hero. Renders the "logged-out" or "logged-in" variant
+    based on context.isguest. Designed to sit between the navbar and the
+    main page content (full-width, dark teal background).
+
+    Context (logged-out):
+        isguest, eyebrow, titlehtml (raw HTML), description,
+        cta_primary, cta_secondary, courses_url, stats[].{num,lbl,tone}
+
+    Context (logged-in):
+        isguest=false, datelabel, welcomeback, greeting, firstname,
+        progressmessage, stats[].{num,lbl,tone},
+        journey_label, journey_name, journey_progress_label, journey_progress,
+        card_label, card_course, card_meta, card_progress, card_hasprogress,
+        card_url, card_continue, card_dashboard, dashboard_url
+}}
+<section class="learnova-hero {{#isguest}}learnova-hero--guest{{/isguest}}{{^isguest}}learnova-hero--user{{/isguest}}">
+    <div class="learnova-hero__bg" aria-hidden="true"{{#bgimage}} style="background-image: url('{{{ bgimage }}}');"{{/bgimage}}></div>
+    <div class="learnova-hero__deco learnova-hero__deco--1" aria-hidden="true"></div>
+    <div class="learnova-hero__deco learnova-hero__deco--2" aria-hidden="true"></div>
+
+    <div class="learnova-hero__inner">
+        {{#isguest}}
+            <div class="learnova-hero__eyebrow">
+                <span class="learnova-hero__eyebrow-dot"></span>{{eyebrow}}
+            </div>
+            <h1 class="learnova-hero__title">
+                {{{ titlehtml }}}
+            </h1>
+            <p class="learnova-hero__description">{{description}}</p>
+
+            <div class="learnova-hero__cta-row">
+                
+                <a class="learnova-hero__btn learnova-hero__btn--primary" href="{{courses_url}}">
+                <img src="{{{ config.wwwroot }}}/theme/learnovatheme/pix/icons/book.svg"
+                     class="learnova-hero__cta-icon" aria-hidden="true">
+                    {{cta_secondary}}
+                </a>
+                <a class="learnova-hero__btn learnova-hero__btn--ghost learnova-btn-login" href="login/index.php" data-action="learnova-open-login">
+                    {{cta_primary}}
+                </a>
+            </div>
+
+            <div class="learnova-hero__stats" role="list">
+                {{#stats}}
+                    <div class="learnova-hero__stat" role="listitem">
+                        <div class="learnova-hero__stat-num {{#tone}}learnova-hero__stat-num--{{tone}}{{/tone}}">{{num}}</div>
+                        <div class="learnova-hero__stat-lbl">{{lbl}}</div>
+                    </div>
+                {{/stats}}
+            </div>
+        {{/isguest}}
+
+        {{^isguest}}
+            <div class="learnova-hero__grid">
+                <div class="learnova-hero__col-main">
+                    <div class="learnova-hero__greet-meta">{{datelabel}} · {{welcomeback}}</div>
+                    <h1 class="learnova-hero__greet">{{greeting}}, <em>{{firstname}}</em>!</h1>
+                    <p class="learnova-hero__description learnova-hero__description--user">{{progressmessage}}</p>
+
+                    <div class="learnova-hero__stats learnova-hero__stats--user">
+                        {{#stats}}
+                            <div class="learnova-hero__stat">
+                                <div class="learnova-hero__stat-num {{#tone}}learnova-hero__stat-num--{{tone}}{{/tone}}">{{num}}</div>
+                                <div class="learnova-hero__stat-lbl">{{lbl}}</div>
+                            </div>
+                        {{/stats}}
+                    </div>
+
+                    <div class="learnova-hero__journey-tag">
+                        <span class="learnova-hero__journey-dot"></span>{{journey_label}}: {{journey_name}}
+                    </div>
+                    <div class="learnova-hero__progress">
+                        <div class="learnova-hero__progress-lbl">
+                            <span>{{journey_progress_label}}</span>
+                            <span class="learnova-hero__progress-pct">{{journey_progress}}%</span>
+                        </div>
+                        <div class="learnova-hero__progress-bg">
+                            <div class="learnova-hero__progress-fill" style="width: {{journey_progress}}%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <aside class="learnova-hero__card" aria-label="{{card_label}}">
+                    <div class="learnova-hero__card-lbl">{{card_label}}</div>
+                    <div class="learnova-hero__card-course">{{card_course}}</div>
+                    {{#card_meta}}
+                        <div class="learnova-hero__card-meta">{{card_meta}}</div>
+                    {{/card_meta}}
+
+                    {{#card_hasprogress}}
+                        <div class="learnova-hero__card-prog-row">
+                            <div class="learnova-hero__card-prog-bg">
+                                <div class="learnova-hero__card-prog-fill" style="width: {{card_progress}}%"></div>
+                            </div>
+                            <div class="learnova-hero__card-pct">{{card_progress}}%</div>
+                        </div>
+                    {{/card_hasprogress}}
+
+                    <div class="learnova-hero__card-actions">
+                        <a class="learnova-hero__card-cont" href="{{card_url}}">
+                        <img src="{{{ config.wwwroot }}}/theme/learnovatheme/pix/icons/arrow-right.svg"
+                            class="learnova-hero__card-icon" aria-hidden="true">
+                        {{card_continue}}</a>
+                        <a class="learnova-hero__card-dash" href="{{dashboard_url}}">
+                        <img src="{{{ config.wwwroot }}}/theme/learnovatheme/pix/icons/home.svg"
+                            class="learnova-hero__card-icon" aria-hidden="true">
+                        {{card_dashboard}}</a>
+                    </div>
+                </aside>
+            </div>
+        {{/isguest}}
+    </div>
+</section>

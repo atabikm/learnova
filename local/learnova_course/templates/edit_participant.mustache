@@ -1,0 +1,72 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_learnova_course/edit_participant
+
+    "Edit participant" modal body (loaded as a fragment into a core/modal). Role +
+    group checkboxes for one enrolled user, pre-checked to their current
+    membership. The management AMD (local_learnova_course/participants) diffs
+    checked vs the initial state and calls the native role/group web services.
+
+    Context: see \local_learnova_course\participants::edit_context().
+}}
+<div class="lm-editpt" data-region="pt-edit" data-userid="{{userid}}" data-contextid="{{contextid}}">
+    <div class="lm-editpt__user">
+        <span class="lm-avatar">{{initials}}</span>
+        <div>
+            <div class="lm-editpt__name">{{name}}</div>
+            <div class="lm-editpt__email">{{email}}</div>
+        </div>
+    </div>
+
+    <div class="lm-editpt__group">
+        <div class="lm-label">{{#str}}pt_roles, local_learnova_course{{/str}}</div>
+        {{#hasroles}}
+        <div class="lm-checklist">
+            {{#roles}}
+            <label class="lm-check"><input type="checkbox" data-region="pt-role" data-roleid="{{id}}"{{#checked}} checked{{/checked}}> {{name}}</label>
+            {{/roles}}
+        </div>
+        {{/hasroles}}
+        {{^hasroles}}<div class="lm-muted">{{#str}}pt_no_assignable_roles, local_learnova_course{{/str}}</div>{{/hasroles}}
+    </div>
+
+    <div class="lm-editpt__group">
+        <div class="lm-label">{{#str}}pt_groups, local_learnova_course{{/str}}</div>
+        {{#hasgroups}}
+        <div class="lm-checklist">
+            {{#groups}}
+            <label class="lm-check"><input type="checkbox" data-region="pt-group" data-groupid="{{id}}"{{#checked}} checked{{/checked}}> {{name}}</label>
+            {{/groups}}
+        </div>
+        {{/hasgroups}}
+        {{^hasgroups}}<div class="lm-muted">{{#str}}pt_no_course_groups, local_learnova_course{{/str}}</div>{{/hasgroups}}
+    </div>
+
+    {{! Enrolment(s): the native enrol_user_enrolment_form, restyled. Serialised +
+        submitted by the AMD via core_enrol_submit_user_enrolment_form on save. }}
+    {{#hasenrolments}}
+    <div class="lm-editpt__group">
+        <div class="lm-label">{{#str}}pt_enrolment, local_learnova_course{{/str}}</div>
+        {{#enrolments}}
+        <div class="lm-editpt__enrol" data-region="pt-enrol" data-ueid="{{ueid}}">
+            {{{formhtml}}}
+        </div>
+        {{/enrolments}}
+    </div>
+    {{/hasenrolments}}
+</div>

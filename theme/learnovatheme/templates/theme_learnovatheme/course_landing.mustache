@@ -1,0 +1,521 @@
+{{!
+    @template theme_learnovatheme/course_landing
+
+    Course Landing page (course/view.php). Mirrors the
+    learnova_course_landing_v6 mockup: a full-width teal hero, then a boxed body
+    with a tabbed content column (Course Content / About / Discussion / Grades)
+    and a sticky progress sidebar. Header + footer are the theme's own globals
+    (rendered by the layout), so they are intentionally omitted here.
+
+    Data is built in classes/course_landing.php. Real wherever a source exists;
+    a few fields (rating, competency chips, learning objectives, the discussion
+    thread) are clearly-marked dummy until those features land.
+
+    Context: see course_landing::context().
+}}
+<section class="learnova-cl">
+
+    {{! ── Announcement band (conditional, 3-tier; built in course_landing.php) ─
+        Full-width, under the topbar and above the hero. Tier drives the modifier
+        class, the tag icon and label. Stroke icons follow the Learnova icon
+        system (stroke-width 2, rounded caps). }}
+    {{#hasannounce}}
+    <div class="learnova-cl__annc learnova-cl__annc--{{announce_tier}}" role="region" aria-label="{{announce_label}}">
+        <div class="learnova-cl__annc-inner">
+            <span class="learnova-cl__annc-tag">
+                {{#announce_is_urgent}}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>{{/announce_is_urgent}}
+                {{#announce_is_warning}}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg>{{/announce_is_warning}}
+                {{#announce_is_info}}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>{{/announce_is_info}}
+                {{announce_label}}
+            </span>
+            <span class="learnova-cl__annc-text">{{{announce_text}}}</span>
+        </div>
+    </div>
+    {{/hasannounce}}
+
+    {{! ── Hero ─────────────────────────────────────────────────────────── }}
+    <div class="learnova-cl__hero">
+        {{#hero_bg}}<div class="learnova-cl__hero-bg" style="background-image:url('{{hero_bg}}');"></div>{{/hero_bg}}
+        <div class="learnova-cl__hero-grad"></div>
+        <div class="learnova-cl__hero-deco1"></div>
+        <div class="learnova-cl__hero-deco2"></div>
+        <div class="learnova-cl__hero-inner">
+            <div class="learnova-cl__pills">
+                {{#hero_category}}<span class="learnova-cl__pill learnova-cl__pill--cat">{{hero_category}}</span>{{/hero_category}}
+            </div>
+            <h1 class="learnova-cl__title">{{hero_title}}</h1>
+            {{#hero_sub}}<p class="learnova-cl__sub">{{hero_sub}}</p>{{/hero_sub}}
+
+            {{#hero_competencies.0}}
+            <div class="learnova-cl__comp-row">
+                {{#hero_competencies}}
+                    <span class="learnova-cl__comp">
+                        <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 6l2.5 2.5 5.5-5"/></svg>{{label}}
+                    </span>
+                {{/hero_competencies}}
+            </div>
+            {{/hero_competencies.0}}
+
+            <div class="learnova-cl__meta">
+                <div class="learnova-cl__mi">
+                    <span class="learnova-cl__stars">
+                        <svg class="learnova-cl__star" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                        <svg class="learnova-cl__star" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                        <svg class="learnova-cl__star" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                        <svg class="learnova-cl__star" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                        <svg class="learnova-cl__star" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                    </span>
+                    <strong>{{hero_rating}}</strong>
+                    <span class="learnova-cl__mi-soft">({{hero_rating_count}} {{#str}}cl_ratings, theme_learnovatheme{{/str}})</span>
+                </div>
+                {{#hero_enrolled}}
+                <div class="learnova-cl__mi">
+                    <svg viewBox="0 0 20 20" fill="currentColor"><path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/></svg>
+                    <strong>{{hero_enrolled}}</strong>&nbsp;{{#str}}cl_enrolled, theme_learnovatheme{{/str}}
+                </div>
+                {{/hero_enrolled}}
+                {{#hero_duration}}
+                <div class="learnova-cl__mi">
+                    <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a8 8 0 100 16A8 8 0 0010 2zm.75 4.75a.75.75 0 00-1.5 0v4l2.5 2.5a.75.75 0 001.06-1.06L10.75 10V6.75z"/></svg>
+                    <strong>{{hero_duration}}</strong>
+                </div>
+                {{/hero_duration}}
+                {{#hero_modules}}
+                <div class="learnova-cl__mi">
+                    <svg viewBox="0 0 20 20" fill="currentColor"><path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z"/></svg>
+                    <strong>{{hero_modules}}&nbsp;{{#str}}cl_modules, theme_learnovatheme{{/str}}</strong>{{#hero_activities}}&nbsp;·&nbsp;{{hero_activities}}&nbsp;{{#str}}cl_activities, theme_learnovatheme{{/str}}{{/hero_activities}}
+                </div>
+                {{/hero_modules}}
+            </div>
+
+            {{#instructor}}
+            <div class="learnova-cl__inst">
+                <div class="learnova-cl__inst-av"><img src="{{avatar}}" alt="{{name}}"></div>
+                <div>
+                    <div class="learnova-cl__inst-label">{{#str}}cl_instructor, theme_learnovatheme{{/str}}</div>
+                    <div class="learnova-cl__inst-name">{{name}}</div>
+                    {{#role}}<div class="learnova-cl__inst-role">{{role}}</div>{{/role}}
+                </div>
+            </div>
+            {{/instructor}}
+        </div>
+    </div>
+
+    {{! ── Edit notice bar — amber, teacher/admin edit mode only ─
+        Sits under the hero, above the main content. The Bulk Actions button
+        toggles bulk-selection mode. }}
+    {{#editing}}
+    <div class="learnova-cl__ednotice" role="region" aria-label="{{#str}}cl_edit_notice_label, theme_learnovatheme{{/str}}">
+        <div class="learnova-cl__ednotice-inner">
+            <span class="learnova-cl__ednotice-tag">{{#str}}cl_edit_notice_tag, theme_learnovatheme{{/str}}</span>
+            <span class="learnova-cl__ednotice-text">{{#str}}cl_edit_notice_text, theme_learnovatheme{{/str}}</span>
+            <button type="button" class="learnova-cl__ednotice-bulk" data-cl-bulk-toggle>
+                <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                {{#str}}cl_edit_bulk, theme_learnovatheme{{/str}}
+            </button>
+        </div>
+    </div>
+    {{/editing}}
+
+    {{! ── Main grid ────────────────────────────────────────────────────── }}
+    <div class="learnova-cl__main">
+        <div class="learnova-cl__left">
+
+            {{! Tab bar. The tabs scroll horizontally inside their own container;
+                the "More →" exit button (teachers/admins only) sits pinned at the
+                right edge and navigates to the Course Management page. }}
+            <div class="learnova-cl__tabbar" data-region="cl-tabs">
+                <div class="learnova-cl__tabs">
+                    <div class="learnova-cl__tab is-active" data-cl-tab="content">{{#str}}cl_tab_content, theme_learnovatheme{{/str}}</div>
+                    {{#hasabout}}<div class="learnova-cl__tab" data-cl-tab="about">{{#str}}cl_tab_about, theme_learnovatheme{{/str}}</div>{{/hasabout}}
+                    {{#hasdiscussion}}<div class="learnova-cl__tab" data-cl-tab="discussion">{{#str}}cl_tab_discussion, theme_learnovatheme{{/str}}</div>{{/hasdiscussion}}
+                    {{#hasprogress}}<div class="learnova-cl__tab" data-cl-tab="progress">{{#str}}cl_tab_progress, theme_learnovatheme{{/str}}</div>{{/hasprogress}}
+                </div>
+                {{#hasmore}}
+                <a class="learnova-cl__tab-exit" href="{{moreurl}}">
+                    {{#str}}cl_tab_more, theme_learnovatheme{{/str}}
+                    <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 10a.75.75 0 01.75-.75h10.638L10.23 5.29a.75.75 0 111.04-1.08l5.5 5.25a.75.75 0 010 1.08l-5.5 5.25a.75.75 0 11-1.04-1.08l4.158-3.96H3.75A.75.75 0 013 10z" clip-rule="evenodd"/></svg>
+                </a>
+                {{/hasmore}}
+            </div>
+
+            {{! Tab panels }}
+            <div class="learnova-cl__tabcontent">
+
+                {{! TAB: Course Content }}
+                <div class="learnova-cl__tp is-active" data-cl-panel="content">
+                    {{> theme_learnovatheme/course_landing_content }}
+                </div>
+
+                {{! TAB: About — only rendered when learning objectives exist }}
+                {{#hasabout}}
+                <div class="learnova-cl__tp" data-cl-panel="about">
+                    <div class="learnova-cl__sec-title">{{#str}}cl_about_title, theme_learnovatheme{{/str}}</div>
+                    <div class="learnova-cl__outcomes">
+                        {{#about.objectives}}
+                        <div class="learnova-cl__oi">
+                            <div class="learnova-cl__oic"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 6l2.5 2.5 5.5-5"/></svg></div>{{text}}
+                        </div>
+                        {{/about.objectives}}
+                    </div>
+                </div>
+                {{/hasabout}}
+
+                {{! TAB: Discussion — custom course discussion (only when enabled) }}
+                {{#hasdiscussion}}
+                <div class="learnova-cl__tp" data-cl-panel="discussion">
+                    <div class="learnova-cl__sec-title">{{#str}}cl_discussion_title, theme_learnovatheme{{/str}}</div>
+                    <div class="learnova-cl__discussion" data-region="cl-discussion" data-courseid="{{discussion.courseid}}">
+
+                        {{! Thread — chronological, scrollable }}
+                        <div class="learnova-cl__thread" data-region="cl-thread">
+                            {{#discussion.posts}}
+                                {{> theme_learnovatheme/discussion_post }}
+                            {{/discussion.posts}}
+                            {{^discussion.posts}}
+                            <div class="learnova-cl__discussion-empty" data-region="cl-thread-empty">{{#str}}cl_discussion_empty, theme_learnovatheme{{/str}}</div>
+                            {{/discussion.posts}}
+                        </div>
+
+                        {{! Composer — below the thread, divider above (mockup v6).
+                            Only for users who may post; others see a read-only note. }}
+                        {{#discussion.canpost}}
+                        <form class="learnova-cl__composer" data-region="cl-composer">
+                            <div class="learnova-cl__composer-reply" data-region="cl-reply-ctx" hidden>
+                                <span>{{#str}}cl_discussion_replyingto, theme_learnovatheme{{/str}} <strong data-region="cl-reply-name"></strong></span>
+                                <button type="button" class="learnova-cl__composer-cancel" data-action="cl-reply-cancel">&times;</button>
+                            </div>
+                            <div class="learnova-cl__composer-row">
+                                <div class="learnova-cl__composer-av">
+                                    {{#discussion.myavatarurl}}<img src="{{discussion.myavatarurl}}" alt="">{{/discussion.myavatarurl}}
+                                </div>
+                                <div class="learnova-cl__composer-wrap">
+                                    <textarea class="learnova-cl__composer-input" data-region="cl-composer-input" maxlength="2000" placeholder="{{#str}}cl_discussion_placeholder, theme_learnovatheme{{/str}}"></textarea>
+                                    <div class="learnova-cl__composer-bar">
+                                        <div class="learnova-cl__composer-err" data-region="cl-composer-err" role="alert" hidden></div>
+                                        <button type="submit" class="learnova-cl__composer-btn" data-action="cl-post">{{#str}}cl_discussion_send, theme_learnovatheme{{/str}}</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                        {{/discussion.canpost}}
+                        {{^discussion.canpost}}
+                        <div class="learnova-cl__composer-note">{{#str}}cl_discussion_readonly, theme_learnovatheme{{/str}}</div>
+                        {{/discussion.canpost}}
+                    </div>
+                </div>
+                {{/hasdiscussion}}
+
+                {{! TAB: Progress (real — native completion + gradebook) }}
+                {{#hasprogress}}
+                <div class="learnova-cl__tp" data-cl-panel="progress">
+
+                    {{! ── Instructor / admin view: participant roster ────────── }}
+                    {{#progress.is_instructor}}
+                    <div class="learnova-cl__grades-hd">
+                        <div class="learnova-cl__sec-title">{{#str}}cl_grades_roster_title, theme_learnovatheme{{/str}}</div>
+                        <a class="learnova-cl__gradebook-link" href="{{progress.gradebook_url}}">
+                            {{#str}}cl_grades_full_gradebook, theme_learnovatheme{{/str}}
+                            <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5 10a1 1 0 011-1h6.586L10.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H6a1 1 0 01-1-1z" clip-rule="evenodd"/></svg>
+                        </a>
+                    </div>
+                    <table class="learnova-cl__grades" data-region="cl-grades-roster">
+                        <thead>
+                            <tr>
+                                <th class="learnova-cl__grade-sort is-sorted-asc" data-cl-sort="name" data-cl-sort-type="text" aria-sort="ascending">{{#str}}cl_grades_participant, theme_learnovatheme{{/str}}<span class="learnova-cl__grade-arrow"></span></th>
+                                <th class="learnova-cl__grade-sort" data-cl-sort="score" data-cl-sort-type="num">{{#str}}cl_grades_course_total, theme_learnovatheme{{/str}}<span class="learnova-cl__grade-arrow"></span></th>
+                                <th>{{#str}}cl_grades_status, theme_learnovatheme{{/str}}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{#progress.rows}}
+                            <tr data-sort-name="{{sortname}}" data-sort-score="{{sortscore}}">
+                                <td class="learnova-cl__grade-name">{{name}}</td>
+                                <td>
+                                    <span class="learnova-cl__grade-score{{^hasscore}} learnova-cl__grade-score--na{{/hasscore}}">{{score}}</span>
+                                    {{#percent}}<span class="learnova-cl__grade-pct">{{percent}}</span>{{/percent}}
+                                </td>
+                                <td><span class="learnova-cl__grade-status learnova-cl__grade-status--{{statuskey}}">{{statuslabel}}</span></td>
+                            </tr>
+                            {{/progress.rows}}
+                        </tbody>
+                    </table>
+                    {{/progress.is_instructor}}
+
+                    {{! ── Learner view: completion ring + activity list ───────── }}
+                    {{^progress.is_instructor}}
+                    <div class="learnova-cl__prog-sum">
+                        <div class="learnova-cl__p-ring">
+                            <svg width="84" height="84" viewBox="0 0 84 84">
+                                <circle cx="42" cy="42" r="34" fill="none" stroke="#E8F8F7" stroke-width="8"/>
+                                <circle cx="42" cy="42" r="34" fill="none" stroke="#00B1AC" stroke-width="8" stroke-linecap="round"
+                                    stroke-dasharray="{{progress.ring_dash}}" stroke-dashoffset="{{progress.ring_offset}}" transform="rotate(-90 42 42)"/>
+                            </svg>
+                            <div class="learnova-cl__p-ring-lbl">
+                                <span class="learnova-cl__p-pct">{{progress.pct}}%</span>
+                                <span class="learnova-cl__p-sub">{{#str}}cl_prog_done, theme_learnovatheme{{/str}}</span>
+                            </div>
+                        </div>
+                        <div class="learnova-cl__p-text">
+                            <h4 class="learnova-cl__p-head learnova-cl__p-head--{{progress.head_key}}">{{progress.heading}}</h4>
+                            <p>{{progress.summary}}{{#progress.deadline}}<br>{{#str}}cl_prog_deadline, theme_learnovatheme{{/str}} {{progress.deadline}}{{/progress.deadline}}</p>
+                        </div>
+                    </div>
+                    <div class="learnova-cl__p-list">
+                        {{#progress.rows}}
+                        <{{#hasurl}}a href="{{url}}"{{/hasurl}}{{^hasurl}}div{{/hasurl}} class="learnova-cl__p-row learnova-cl__p-row--{{statuskey}}">
+                            <span class="learnova-cl__p-typ">{{type}}</span>
+                            <span class="learnova-cl__p-nm">{{name}}</span>
+                            <span class="learnova-cl__p-sc{{^hasscore}} learnova-cl__p-sc--na{{/hasscore}}">{{score}}</span>
+                            <span class="learnova-cl__ps learnova-cl__ps--{{statuskey}}">{{statuslabel}}</span>
+                        </{{#hasurl}}a{{/hasurl}}{{^hasurl}}div{{/hasurl}}>
+                        {{/progress.rows}}
+                    </div>
+                    {{/progress.is_instructor}}
+                </div>
+                {{/hasprogress}}
+
+            </div>
+        </div>
+
+        {{! ── Sidebar ──────────────────────────────────────────────────── }}
+        <div class="learnova-cl__sidebar">
+            <div class="learnova-cl__scard">
+                <div class="learnova-cl__sb-thumb"{{#sidebar.thumb}} style="background-image:url('{{sidebar.thumb}}');"{{/sidebar.thumb}}></div>
+                <div class="learnova-cl__card-body">
+                    {{#sidebar.hasprogress}}
+                    <div class="learnova-cl__prog-lbl">{{#str}}cl_progress, theme_learnovatheme{{/str}} <span>{{sidebar.progress}}%</span></div>
+                    <div class="learnova-cl__prog-bg"><div class="learnova-cl__prog-fill" style="width:{{sidebar.progress}}%"></div></div>
+                    {{/sidebar.hasprogress}}
+
+                    <a class="learnova-cl__cta learnova-cl__cta--{{sidebar.cta_state}}" href="{{sidebar.cta_url}}">
+                        <svg width="13" height="13" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 10a.75.75 0 01.75-.75h10.638L10.23 5.29a.75.75 0 111.04-1.08l5.5 5.25a.75.75 0 010 1.08l-5.5 5.25a.75.75 0 11-1.04-1.08l4.158-3.96H3.75A.75.75 0 013 10z" clip-rule="evenodd"/></svg>
+                        {{sidebar.cta_label}}
+                    </a>
+
+                    <div class="learnova-cl__card-meta">
+                        {{#sidebar.duration}}
+                        <div class="learnova-cl__cmr"><span class="learnova-cl__cml">{{#str}}cl_meta_duration, theme_learnovatheme{{/str}}</span><span class="learnova-cl__cmv">{{sidebar.duration}}</span></div>
+                        {{/sidebar.duration}}
+                        {{#sidebar.completed}}
+                        <div class="learnova-cl__cmr"><span class="learnova-cl__cml">{{#str}}cl_meta_completed, theme_learnovatheme{{/str}}</span><span class="learnova-cl__cmv">{{sidebar.completed}}</span></div>
+                        {{/sidebar.completed}}
+                        {{#sidebar.enrolled}}
+                        <div class="learnova-cl__cmr"><span class="learnova-cl__cml">{{#str}}cl_meta_enrolled, theme_learnovatheme{{/str}}</span><span class="learnova-cl__cmv">{{sidebar.enrolled}}</span></div>
+                        {{/sidebar.enrolled}}
+                    </div>
+
+                    {{#sidebar.continue}}
+                    <div class="learnova-cl__card-div"></div>
+                    <a class="learnova-cl__continue" href="{{sidebar.continue.url}}">
+                        <div class="learnova-cl__cp-ico learnova-cl__cp-ico--{{sidebar.continue.icon_type}}"><img src="{{sidebar.continue.icon}}" alt=""></div>
+                        <div class="learnova-cl__cp-info">
+                            <div class="learnova-cl__cp-label">{{#str}}cl_continue_from, theme_learnovatheme{{/str}}</div>
+                            <div class="learnova-cl__cp-title">{{sidebar.continue.name}}</div>
+                            <div class="learnova-cl__cp-meta">{{sidebar.continue.section}} · {{sidebar.continue.modname}}</div>
+                        </div>
+                    </a>
+                    {{/sidebar.continue}}
+
+                    {{#sidebar.cert_enabled}}
+                    <div class="learnova-cl__card-div"></div>
+                    <div class="learnova-cl__cert">
+                        {{#sidebar.cert_earned}}
+                        <div class="learnova-cl__cert-earned">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
+                            {{#str}}cl_cert_earned, theme_learnovatheme{{/str}}
+                        </div>
+                        {{/sidebar.cert_earned}}
+                        {{^sidebar.cert_earned}}
+                        <div class="learnova-cl__cert-pending">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
+                            {{#str}}cl_cert_pending, theme_learnovatheme{{/str}}
+                        </div>
+                        {{/sidebar.cert_earned}}
+                    </div>
+                    {{/sidebar.cert_enabled}}
+                </div>
+            </div>
+
+            {{! Placeholder cards — features pending }}
+            <div class="learnova-cl__scard">
+                <div class="learnova-cl__ph">
+                    <div class="learnova-cl__ph-icon">&#127918;</div>
+                    <div class="learnova-cl__ph-title">{{#str}}cl_gamification_title, theme_learnovatheme{{/str}}</div>
+                    <div class="learnova-cl__ph-sub">{{#str}}cl_gamification_sub, theme_learnovatheme{{/str}}</div>
+                </div>
+            </div>
+            <div class="learnova-cl__scard">
+                <div class="learnova-cl__ph">
+                    <div class="learnova-cl__ph-icon">&#11088;</div>
+                    <div class="learnova-cl__ph-title">{{#str}}cl_rate_title, theme_learnovatheme{{/str}}</div>
+                    <div class="learnova-cl__ph-sub">{{#str}}cl_rate_sub, theme_learnovatheme{{/str}}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{! ══ Edit-mode overlays — rendered once, teacher only ══ }}
+    {{#editing}}
+
+    {{! Dim overlay shared by both sliding panels }}
+    <div class="learnova-cl__ov" data-cl-overlay></div>
+
+    {{! Edit Settings panel — hosts the real Moodle form (modedit / editsection)
+        in an iframe, so its native collapsible fieldsets ARE the accordion and
+        saving is real. }}
+    <div class="learnova-cl__panel learnova-cl__panel--edit" data-region="cl-edit-panel">
+        <div class="learnova-cl__panel-top">
+            <div>
+                <div class="learnova-cl__panel-badge" data-region="cl-edit-badge">{{#str}}cl_edit_panel_section, theme_learnovatheme{{/str}}</div>
+                <div class="learnova-cl__panel-title" data-region="cl-edit-title">{{#str}}cl_edit_panel_section, theme_learnovatheme{{/str}}</div>
+            </div>
+            <button type="button" class="learnova-cl__panel-x" data-cl-panel-close aria-label="{{#str}}closebuttontitle, core{{/str}}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12" stroke-linecap="round"/></svg>
+            </button>
+        </div>
+        <iframe class="learnova-cl__panel-frame" data-region="cl-edit-frame" title="{{#str}}cl_edit_panel_activity, theme_learnovatheme{{/str}}" src="about:blank"></iframe>
+    </div>
+
+    {{! Add Activity/Resource panel — custom grid; tiles carry the real add-form
+        URL and are grouped/filtered by Learnova learning-experience category.
+        The section number is appended to the selected tile's URL
+        when opened; "Add to course" then navigates there. }}
+    <div class="learnova-cl__panel learnova-cl__panel--add" data-region="cl-add-panel">
+        <div class="learnova-cl__panel-top">
+            <div>
+                <div class="learnova-cl__panel-badge learnova-cl__panel-badge--content">{{#str}}cl_edit_addpanel_badge, theme_learnovatheme{{/str}}</div>
+                <div class="learnova-cl__panel-title">{{#str}}cl_edit_addpanel_title, theme_learnovatheme{{/str}}</div>
+            </div>
+            <button type="button" class="learnova-cl__panel-x" data-cl-panel-close aria-label="{{#str}}closebuttontitle, core{{/str}}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12" stroke-linecap="round"/></svg>
+            </button>
+        </div>
+
+        {{! Search }}
+        <div class="learnova-cl__aa-searchbar">
+            <svg class="learnova-cl__aa-search-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round"/></svg>
+            <input type="search" class="learnova-cl__aa-search" data-region="cl-add-search" placeholder="{{#str}}cl_edit_addpanel_search, theme_learnovatheme{{/str}}">
+        </div>
+
+        {{! Category filter pills }}
+        <div class="learnova-cl__aa-filters" data-region="cl-add-filters">
+            <button type="button" class="learnova-cl__aa-pill is-active" data-cl-filter="all">{{#str}}cl_addfilter_all, theme_learnovatheme{{/str}}</button>
+            <button type="button" class="learnova-cl__aa-pill learnova-cl__aa-pill--fav" data-cl-filter="favorited">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                {{#str}}cl_addfilter_favorited, theme_learnovatheme{{/str}}
+            </button>
+            <span class="learnova-cl__aa-filters-break"></span>
+            <button type="button" class="learnova-cl__aa-pill learnova-cl__aa-pill--learn" data-cl-filter="learn"><img class="learnova-cl__aa-pill-ico" src="{{addgrid.caticons.learn}}" alt="">{{#str}}cl_addcat_learn, theme_learnovatheme{{/str}}</button>
+            <button type="button" class="learnova-cl__aa-pill learnova-cl__aa-pill--assess" data-cl-filter="assess"><img class="learnova-cl__aa-pill-ico" src="{{addgrid.caticons.assess}}" alt="">{{#str}}cl_addcat_assess, theme_learnovatheme{{/str}}</button>
+            <button type="button" class="learnova-cl__aa-pill learnova-cl__aa-pill--discuss" data-cl-filter="discuss"><img class="learnova-cl__aa-pill-ico" src="{{addgrid.caticons.discuss}}" alt="">{{#str}}cl_addcat_discuss, theme_learnovatheme{{/str}}</button>
+            <button type="button" class="learnova-cl__aa-pill learnova-cl__aa-pill--interactive" data-cl-filter="interactive"><img class="learnova-cl__aa-pill-ico" src="{{addgrid.caticons.interactive}}" alt="">{{#str}}cl_addcat_interactive, theme_learnovatheme{{/str}}</button>
+            <button type="button" class="learnova-cl__aa-pill learnova-cl__aa-pill--live" data-cl-filter="live"><img class="learnova-cl__aa-pill-ico" src="{{addgrid.caticons.live}}" alt="">{{#str}}cl_addcat_live, theme_learnovatheme{{/str}}</button>
+            <button type="button" class="learnova-cl__aa-pill learnova-cl__aa-pill--survey" data-cl-filter="survey"><img class="learnova-cl__aa-pill-ico" src="{{addgrid.caticons.survey}}" alt="">{{#str}}cl_addcat_survey, theme_learnovatheme{{/str}}</button>
+        </div>
+
+        {{! Body — sections + empty state }}
+        <div class="learnova-cl__panel-body learnova-cl__aa-body">
+            {{#addgrid.activities.0}}
+            <div class="learnova-cl__aa-section" data-region="cl-add-section">
+                <div class="learnova-cl__aa-lbl">{{#str}}cl_edit_addpanel_activities, theme_learnovatheme{{/str}} <span class="learnova-cl__aa-ct" data-region="cl-add-count"></span></div>
+                <div class="learnova-cl__aa-grid">
+                    {{#addgrid.activities}}{{> theme_learnovatheme/course_landing_addtile }}{{/addgrid.activities}}
+                </div>
+            </div>
+            {{/addgrid.activities.0}}
+            {{#addgrid.resources.0}}
+            <div class="learnova-cl__aa-section" data-region="cl-add-section">
+                <div class="learnova-cl__aa-lbl">{{#str}}cl_edit_addpanel_resources, theme_learnovatheme{{/str}} <span class="learnova-cl__aa-ct" data-region="cl-add-count"></span></div>
+                <div class="learnova-cl__aa-grid">
+                    {{#addgrid.resources}}{{> theme_learnovatheme/course_landing_addtile }}{{/addgrid.resources}}
+                </div>
+            </div>
+            {{/addgrid.resources.0}}
+            {{#addgrid.plugins.0}}
+            <div class="learnova-cl__aa-section" data-region="cl-add-section">
+                <div class="learnova-cl__aa-lbl">{{#str}}cl_edit_addpanel_plugins, theme_learnovatheme{{/str}} <span class="learnova-cl__aa-ct" data-region="cl-add-count"></span></div>
+                <div class="learnova-cl__aa-grid">
+                    {{#addgrid.plugins}}{{> theme_learnovatheme/course_landing_addtile }}{{/addgrid.plugins}}
+                </div>
+            </div>
+            {{/addgrid.plugins.0}}
+            <div class="learnova-cl__aa-empty" data-region="cl-add-empty">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35" stroke-linecap="round"/></svg>
+                <div class="learnova-cl__aa-empty-t">{{#str}}cl_addpanel_empty_title, theme_learnovatheme{{/str}}</div>
+                <div class="learnova-cl__aa-empty-d">{{#str}}cl_addpanel_empty_desc, theme_learnovatheme{{/str}}</div>
+            </div>
+        </div>
+
+        {{! Footer — dynamic info pane (hover/select) + action row }}
+        <div class="learnova-cl__aa-ft">
+            <div class="learnova-cl__aa-info" data-region="cl-add-info">
+                <div class="learnova-cl__aa-info-ico" data-region="cl-add-info-ico"></div>
+                <div class="learnova-cl__aa-info-body">
+                    <div class="learnova-cl__aa-info-name" data-region="cl-add-info-name"></div>
+                    <div class="learnova-cl__aa-info-desc" data-region="cl-add-info-desc"></div>
+                </div>
+            </div>
+            <div class="learnova-cl__aa-actions">
+                <span class="learnova-cl__aa-hint" data-region="cl-add-hint">{{#str}}cl_addpanel_hint, theme_learnovatheme{{/str}}</span>
+                <button type="button" class="learnova-cl__aa-cancel" data-cl-panel-close>{{#str}}cancel, core{{/str}}</button>
+                <button type="button" class="learnova-cl__aa-star" data-region="cl-add-star" data-cl-addstar>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    <span data-region="cl-add-star-lbl">{{#str}}cl_addpanel_favorite, theme_learnovatheme{{/str}}</span>
+                </button>
+                <button type="button" class="learnova-cl__aa-add" data-region="cl-add-confirm" data-cl-addconfirm disabled>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg>
+                    {{#str}}cl_addpanel_add, theme_learnovatheme{{/str}}
+                </button>
+            </div>
+        </div>
+    </div>
+
+    {{! Move-target modal (single + bulk) — pick a destination section }}
+    <div class="learnova-cl__movemodal" data-region="cl-move-modal">
+        <div class="learnova-cl__movemodal-card">
+            <div class="learnova-cl__panel-top">
+                <div class="learnova-cl__panel-title">{{#str}}cl_edit_move_title, theme_learnovatheme{{/str}}</div>
+                <button type="button" class="learnova-cl__panel-x" data-cl-move-close aria-label="{{#str}}closebuttontitle, core{{/str}}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12" stroke-linecap="round"/></svg></button>
+            </div>
+            <div class="learnova-cl__movemodal-list">
+                {{#modules}}
+                <button type="button" class="learnova-cl__movemodal-item" data-cl-move-target="{{sectionid}}">{{name}}</button>
+                {{/modules}}
+            </div>
+        </div>
+    </div>
+
+    {{! Bulk action bar — fixed bottom, shown only in bulk mode }}
+    <div class="learnova-cl__bulkbar" data-region="cl-bulkbar" data-courseid="{{courseid}}" data-contextid="{{contextid}}" data-sesskey="{{sesskey}}" data-courseformat="{{courseformat}}">
+        <label class="learnova-cl__bulk-all"><input type="checkbox" data-cl-bulk-all>{{#str}}cl_bulk_selectall, theme_learnovatheme{{/str}}</label>
+        <span class="learnova-cl__bulk-cnt" data-region="cl-bulk-count">{{#str}}cl_bulk_selected, theme_learnovatheme, 0{{/str}}</span>
+        <span class="learnova-cl__bulk-sep"></span>
+        <button type="button" class="learnova-cl__bulk-act" data-cl-bulk-action="hide">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M13.875 7.375A6.98 6.98 0 0116.542 10C15.268 14.057 11.478 17 7 17a6.97 6.97 0 01-2.29-.384M3.458 10A6.98 6.98 0 016.5 6.5m11.043 11.043l-14-14"/></svg>
+            <span class="learnova-cl__bulk-lbl">{{#str}}cl_bulk_availability, theme_learnovatheme{{/str}}</span>
+        </button>
+        <button type="button" class="learnova-cl__bulk-act" data-cl-bulk-action="duplicate">
+            <svg viewBox="0 0 20 20" fill="currentColor"><path d="M7 9a2 2 0 012-2h6a2 2 0 012 2v6a2 2 0 01-2 2H9a2 2 0 01-2-2V9z"/><path d="M5 3a2 2 0 00-2 2v6a2 2 0 002 2V5h8a2 2 0 00-2-2H5z"/></svg>
+            <span class="learnova-cl__bulk-lbl">{{#str}}cl_edit_menu_duplicate, theme_learnovatheme{{/str}}</span>
+        </button>
+        <button type="button" class="learnova-cl__bulk-act" data-cl-bulk-action="move">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 9 2 12 5 15"/><polyline points="9 5 12 2 15 5"/><polyline points="15 19 12 22 9 19"/><polyline points="19 9 22 12 19 15"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="22"/></svg>
+            <span class="learnova-cl__bulk-lbl">{{#str}}cl_edit_menu_move, theme_learnovatheme{{/str}}</span>
+        </button>
+        <button type="button" class="learnova-cl__bulk-act learnova-cl__bulk-act--del" data-cl-bulk-action="delete">
+            <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+            <span class="learnova-cl__bulk-lbl">{{#str}}cl_edit_menu_delete, theme_learnovatheme{{/str}}</span>
+        </button>
+        <button type="button" class="learnova-cl__bulk-close" data-cl-bulk-toggle aria-label="{{#str}}closebuttontitle, core{{/str}}">
+            <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+        </button>
+    </div>
+
+    {{/editing}}
+</section>
+{{#js}}
+require(['theme_learnovatheme/course_landing'], function(CL) {
+    CL.init();
+});
+{{/js}}

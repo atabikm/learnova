@@ -1,0 +1,26 @@
+{{!
+    @template theme_learnovatheme/course_landing_addtile
+
+    One tile in the Add Activity/Resource panel. A selectable card:
+    click selects it (footer then drives "Add to course"); hover previews it in
+    the footer info pane. All the data the panel JS needs rides on data-* attrs.
+    Context: one tile built by course_landing::add_activity_grid().
+}}
+<button type="button" class="learnova-cl__aa-item{{#favourite}} is-fav{{/favourite}}" data-region="cl-add-tile"
+    data-cl-addurl="{{addurlbase}}"
+    data-cl-modname="{{modname}}"
+    data-cl-search="{{label}}"
+    data-cl-cat="{{category}}"
+    data-cl-catlabel="{{catlabel}}"
+    data-cl-desc="{{desc}}"
+    data-cl-slug="{{icon_type}}"
+    data-cl-icon="{{icon}}"
+    data-cl-itemid="{{contentitemid}}"
+    data-cl-component="{{component}}"
+    data-cl-canfav="{{#canfav}}1{{/canfav}}{{^canfav}}0{{/canfav}}">
+    <span class="learnova-cl__aa-ico learnova-cl__act-ico--{{icon_type}}"><img src="{{icon}}" alt=""></span>
+    <span class="learnova-cl__aa-nm">{{label}}</span>
+    <span class="learnova-cl__aa-check" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </span>
+</button>

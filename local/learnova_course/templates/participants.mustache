@@ -1,0 +1,129 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_learnova_course/participants
+
+    Course Management "Participants" panel body — the enrolled users as a custom
+    Learnova table (lm-* component library) driven by real data. Search / role
+    filter / pagination are GET links back to management.php (which re-opens
+    this panel); Enrol + per-user Edit hand off to Moodle's native
+    participants / profile pages.
+
+    Context: see \local_learnova_course\participants::context().
+}}
+<div class="lm-card">
+    <div class="lm-card__hd">
+        <span class="lm-card__title">{{#str}}pt_enrolled_users, local_learnova_course{{/str}}</span>
+        {{#canenrol}}<button type="button" class="lm-btn lm-btn--primary lm-btn--sm" data-action="pt-enrol-users" data-contextid="{{contextid}}">{{#str}}pt_enrol_users, local_learnova_course{{/str}}</button>{{/canenrol}}
+    </div>
+    <div class="lm-card__body">
+
+        {{! Search + role filter (GET form; hidden fields keep the panel open) }}
+        <form class="lm-toolbar" method="get" action="{{formaction}}">
+            <input type="hidden" name="id" value="{{courseid}}">
+            <input type="hidden" name="pane" value="participants">
+            <input class="lm-input" type="search" name="psearch" value="{{search}}"
+                placeholder="{{#str}}pt_search_ph, local_learnova_course{{/str}}">
+            <select class="lm-select" name="prole">
+                {{#roleoptions}}<option value="{{value}}"{{#selected}} selected{{/selected}}>{{label}}</option>{{/roleoptions}}
+            </select>
+            <select class="lm-select" name="pgroup">
+                {{#groupoptions}}<option value="{{value}}"{{#selected}} selected{{/selected}}>{{label}}</option>{{/groupoptions}}
+            </select>
+            <button class="lm-btn lm-btn--primary lm-btn--sm" type="submit">{{#str}}pt_apply, local_learnova_course{{/str}}</button>
+            <span class="lm-toolbar__count">{{count_label}}</span>
+        </form>
+
+        {{#hasrows}}
+        {{! Bulk selection bar — revealed by the AMD module when ≥1 row checked }}
+        <div class="lm-bulkbar" data-region="pt-bulkbar" hidden>
+            <span class="lm-bulkbar__count" data-region="pt-count">0</span>
+            {{#canmessage}}<button type="button" class="lm-btn lm-btn--secondary lm-btn--sm" data-action="pt-message">{{#str}}pt_message, local_learnova_course{{/str}}</button>{{/canmessage}}
+            <button type="button" class="lm-linkbtn" data-action="pt-clear">{{#str}}pt_clear, local_learnova_course{{/str}}</button>
+        </div>
+
+        <div class="lm-table-wrap">
+            {{! table-reboot opts out of Moodle's aggressive default table cell
+                borders (table:not(.table):not(.table-reboot)… td{border}), so only
+                lm-table's own bottom dividers show. }}
+            <table class="lm-table table-reboot" data-region="pt-table" data-contextid="{{contextid}}">
+                <thead>
+                    <tr>
+                        <th class="lm-table__check"><input type="checkbox" data-action="pt-selectall" aria-label="{{#str}}pt_selectall, local_learnova_course{{/str}}"></th>
+                        <th>{{#str}}pt_col_name, local_learnova_course{{/str}}</th>
+                        <th>{{#str}}pt_col_email, local_learnova_course{{/str}}</th>
+                        <th>{{#str}}pt_col_roles, local_learnova_course{{/str}}</th>
+                        <th>{{#str}}pt_col_groups, local_learnova_course{{/str}}</th>
+                        <th>{{#str}}pt_col_lastaccess, local_learnova_course{{/str}}</th>
+                        <th>{{#str}}pt_col_status, local_learnova_course{{/str}}</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#rows}}
+                    <tr>
+                        <td class="lm-table__check"><input type="checkbox" data-region="pt-row" data-userid="{{id}}" aria-label="{{name}}"></td>
+                        <td>
+                            <span class="lm-ucell">
+                                <span class="lm-avatar">{{initials}}</span>
+                                <span class="lm-table__name">{{name}}</span>
+                            </span>
+                        </td>
+                        <td class="lm-muted">{{email}}</td>
+                        <td>
+                            {{#hasroles}}{{#roles}}<span class="lm-badge lm-badge--{{tone}}">{{{name}}}</span> {{/roles}}{{/hasroles}}
+                            {{^hasroles}}<span class="lm-muted">&mdash;</span>{{/hasroles}}
+                        </td>
+                        <td>{{{groups}}}{{^groups}}<span class="lm-muted">{{#str}}pt_no_groups, local_learnova_course{{/str}}</span>{{/groups}}</td>
+                        <td class="lm-muted">{{lastaccess}}</td>
+                        <td><span class="lm-badge lm-badge--{{#status_active}}success{{/status_active}}{{^status_active}}muted{{/status_active}}">{{status_label}}</span></td>
+                        <td class="lm-table__actions">
+                            {{#canedit}}<button type="button" class="lm-linkbtn" data-action="pt-edit" data-userid="{{id}}" data-name="{{name}}">{{#str}}pt_edit, local_learnova_course{{/str}}</button>{{/canedit}}
+                            {{#candelete}}{{#ueids}}<button type="button" class="lm-linkbtn lm-linkbtn--danger" data-action="pt-delete" data-name="{{name}}" data-ueids="{{ueids}}">{{#str}}pt_delete, local_learnova_course{{/str}}</button>{{/ueids}}{{/candelete}}
+                        </td>
+                    </tr>
+                    {{/rows}}
+                </tbody>
+            </table>
+        </div>
+
+        {{! Pager: range + page buttons always shown (at least page "1", even for
+            a single page); prev/next appear only when there's somewhere to go. }}
+        <div class="lm-pager">
+            <span>{{pager.range}}</span>
+            <div class="lm-pager__btns">
+                {{#pager.has_prev}}<a class="lm-pager__btn lm-pager__btn--wide" href="{{pager.prev_url}}">{{#str}}pt_prev, local_learnova_course{{/str}}</a>{{/pager.has_prev}}
+                {{#pager.buttons}}<a class="lm-pager__btn{{#active}} is-on{{/active}}" href="{{url}}">{{num}}</a>{{/pager.buttons}}
+                {{#pager.has_next}}<a class="lm-pager__btn lm-pager__btn--wide" href="{{pager.next_url}}">{{#str}}pt_next, local_learnova_course{{/str}}</a>{{/pager.has_next}}
+            </div>
+        </div>
+        {{/hasrows}}
+
+        {{^hasrows}}
+        <div class="lm-empty">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-1.13a4 4 0 10-4-4 4 4 0 004 4zm6-4a3 3 0 10-3-3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <div class="lm-empty__title">{{#str}}pt_none_title, local_learnova_course{{/str}}</div>
+            <div class="lm-empty__desc">{{#str}}pt_none_desc, local_learnova_course{{/str}}</div>
+        </div>
+        {{/hasrows}}
+    </div>
+</div>
+{{#js}}
+require(['local_learnova_course/participants'], function(PT) {
+    PT.init();
+});
+{{/js}}

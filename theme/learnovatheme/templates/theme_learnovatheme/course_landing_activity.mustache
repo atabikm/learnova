@@ -1,0 +1,57 @@
+{{!
+    @template theme_learnovatheme/course_landing_activity
+
+    One activity row in the Course Content tab. Rendered as a whole-row link when
+    viewing; in edit mode it becomes a <div> (so the per-item edit controls are
+    not nested inside an <a>) with the name as the link, and gains a bulk
+    checkbox + pencil + three-dot menu. Context: one entry built
+    by course_landing::build_activity_entry().
+}}
+{{#editing}}<div class="learnova-cl__act{{#current}} learnova-cl__act--current{{/current}}{{#locked}} learnova-cl__act--locked{{/locked}}{{#hidden}} learnova-cl__act--dim{{/hidden}}" data-cl-cmid="{{cmid}}">{{/editing}}
+{{^editing}}<a class="learnova-cl__act{{#current}} learnova-cl__act--current{{/current}}{{#locked}} learnova-cl__act--locked{{/locked}}" {{#hasurl}}href="{{url}}"{{/hasurl}}>{{/editing}}
+    {{#editing}}<span class="learnova-cl__drag" data-cl-drag draggable="true" data-cl-edstop title="{{#str}}cl_edit_drag, theme_learnovatheme{{/str}}" aria-hidden="true"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M7 4a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM7 10a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM5.5 17.5a1.5 1.5 0 100-3 1.5 1.5 0 000 3zM16 4a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM14.5 11.5a1.5 1.5 0 100-3 1.5 1.5 0 000 3zM16 16a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/></svg></span>{{/editing}}
+    {{#editing}}<input type="checkbox" class="learnova-cl__bchk" data-cl-bulk-item data-cl-type="cm" data-cl-id="{{cmid}}" aria-label="{{#str}}cl_bulk_select, theme_learnovatheme{{/str}}">{{/editing}}
+    <div class="learnova-cl__act-ico learnova-cl__act-ico--{{icon_type}}"><img src="{{icon}}" alt=""></div>
+    {{#editing}}
+    <a class="learnova-cl__act-name{{#done}} learnova-cl__act-name--done{{/done}}" {{#hasurl}}href="{{url}}"{{/hasurl}}>{{name}}{{#current}} <span class="learnova-cl__act-tag">{{#str}}cl_continue, theme_learnovatheme{{/str}}</span>{{/current}}</a>
+    {{/editing}}
+    {{^editing}}
+    <div class="learnova-cl__act-name{{#done}} learnova-cl__act-name--done{{/done}}">{{name}}{{#current}} <span class="learnova-cl__act-tag">{{#str}}cl_continue, theme_learnovatheme{{/str}}</span>{{/current}}</div>
+    {{/editing}}
+
+    {{#editing}}
+    <div class="learnova-cl__edctrls" data-cl-edstop>
+        <button type="button" class="learnova-cl__ep" data-cl-action="rename" data-cl-rename-type="cm" data-cl-rename-id="{{cmid}}" data-cl-name="{{name}}" aria-label="{{#str}}cl_edit_rename, theme_learnovatheme{{/str}}">
+            <svg viewBox="0 0 20 20" fill="currentColor"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/></svg>
+        </button>
+        <div class="learnova-cl__menu-wrap">
+            <button type="button" class="learnova-cl__menu-btn" data-cl-menu-toggle aria-label="{{#str}}cl_edit_menu_more, theme_learnovatheme{{/str}}">
+                <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"/></svg>
+            </button>
+            <div class="learnova-cl__menu" data-region="cl-menu">
+                {{#hasurl}}<a class="learnova-cl__mi" href="{{url}}"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/><path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/></svg>{{#str}}cl_edit_menu_view, theme_learnovatheme{{/str}}</a>{{/hasurl}}
+                <button type="button" class="learnova-cl__mi" data-cl-action="edit" data-cl-edit-url="{{edit_url}}" data-cl-title="{{#str}}cl_edit_panel_activity, theme_learnovatheme{{/str}}" data-cl-badge="{{#str}}cl_edit_panel_activity_badge, theme_learnovatheme{{/str}}"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/></svg>{{#str}}cl_edit_menu_editsettings, theme_learnovatheme{{/str}}</button>
+                <button type="button" class="learnova-cl__mi" data-cl-action="duplicate" data-cl-type="cm" data-cl-id="{{cmid}}"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M7 9a2 2 0 012-2h6a2 2 0 012 2v6a2 2 0 01-2 2H9a2 2 0 01-2-2V9z"/><path d="M5 3a2 2 0 00-2 2v6a2 2 0 002 2V5h8a2 2 0 00-2-2H5z"/></svg>{{#str}}cl_edit_menu_duplicate, theme_learnovatheme{{/str}}</button>
+                {{#hidden}}<button type="button" class="learnova-cl__mi" data-cl-action="show" data-cl-type="cm" data-cl-id="{{cmid}}"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/><path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/></svg>{{#str}}cl_edit_menu_show, theme_learnovatheme{{/str}}</button>{{/hidden}}
+                {{^hidden}}<button type="button" class="learnova-cl__mi" data-cl-action="hide" data-cl-type="cm" data-cl-id="{{cmid}}"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M13.875 7.375A6.98 6.98 0 0116.542 10C15.268 14.057 11.478 17 7 17a6.97 6.97 0 01-2.29-.384M3.458 10A6.98 6.98 0 016.5 6.5m11.043 11.043l-14-14" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>{{#str}}cl_edit_menu_hide, theme_learnovatheme{{/str}}</button>{{/hidden}}
+                <button type="button" class="learnova-cl__mi" data-cl-action="move" data-cl-type="cm" data-cl-id="{{cmid}}" data-cl-name="{{name}}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 9 2 12 5 15"/><polyline points="9 5 12 2 15 5"/><polyline points="15 19 12 22 9 19"/><polyline points="19 9 22 12 19 15"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="22"/></svg>{{#str}}cl_edit_menu_move, theme_learnovatheme{{/str}}</button>
+                <div class="learnova-cl__mi-sep"></div>
+                <button type="button" class="learnova-cl__mi learnova-cl__mi--del" data-cl-action="delete" data-cl-type="cm" data-cl-id="{{cmid}}" data-cl-name="{{name}}"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>{{#str}}cl_edit_menu_delete, theme_learnovatheme{{/str}}</button>
+            </div>
+        </div>
+    </div>
+    {{/editing}}
+
+    {{! Completion / lock status icon (shown in both modes) }}
+    {{#done}}
+        <svg class="learnova-cl__act-check" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+    {{/done}}
+    {{^done}}
+        {{#locked}}
+        <svg class="learnova-cl__act-lock" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clip-rule="evenodd"/></svg>
+        {{/locked}}
+        {{^locked}}{{#tracked}}
+        <svg class="learnova-cl__act-check learnova-cl__act-check--grey" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+        {{/tracked}}{{/locked}}
+    {{/done}}
+{{#editing}}</div>{{/editing}}{{^editing}}</a>{{/editing}}

@@ -1,0 +1,163 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_learnova_course/competencies
+
+    Course Management "Competencies" panel body — a full-width proficiency
+    summary with its progress bar and the activity filter, then the course's
+    competencies as a two-column card grid, and a slide-in picker for adding
+    more (framework + search + checklist).
+
+    Context: see \local_learnova_course\competencies::context().
+}}
+{{#disabled}}
+<div class="lm-card">
+    <div class="lm-card__body">
+        <div class="lm-empty">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <div class="lm-empty__title">{{#str}}cp_off_title, local_learnova_course{{/str}}</div>
+            <div class="lm-empty__desc">{{#str}}cp_off_desc, local_learnova_course{{/str}}</div>
+        </div>
+    </div>
+</div>
+{{/disabled}}
+
+{{^disabled}}
+<div class="lm-card">
+    <div class="lm-card__hd">
+        <span class="lm-card__title">{{#str}}cp_title, local_learnova_course{{/str}}</span>
+        {{#canadd}}
+        <button type="button" class="lm-btn lm-btn--primary lm-btn--sm" data-action="cp-add">
+            {{#str}}cp_add, local_learnova_course{{/str}}
+        </button>
+        {{/canadd}}
+    </div>
+    <div class="lm-card__body">
+        {{#gradable}}
+        {{! Unescaped: the string carries its own <b> around the counts, and the
+            only things substituted into it are two integers we counted here. }}
+        <div class="lm-cp-summary">{{{summary}}}</div>
+        <div class="lm-progress" role="progressbar" aria-valuenow="{{percent}}" aria-valuemin="0" aria-valuemax="100">
+            <div class="lm-progress__bar" style="width: {{percent}}%"></div>
+        </div>
+        {{/gradable}}
+
+        {{#hasactivities}}
+        <div class="lm-cp-filter">
+            <label class="lm-label" for="cp-filter">{{#str}}cp_filter, local_learnova_course{{/str}}</label>
+            <select class="lm-select" id="cp-filter" data-action="cp-filter">
+                <option value="0">{{#str}}cp_filter_none, local_learnova_course{{/str}}</option>
+                {{#activities}}<option value="{{value}}">{{label}}</option>{{/activities}}
+            </select>
+        </div>
+        {{/hasactivities}}
+    </div>
+</div>
+
+{{#hascards}}
+<div class="lm-cp-grid" data-region="cp-grid">
+    {{#cards}}
+    <div class="lm-card lm-cp-card" data-cmids="{{cmids}}">
+        <div class="lm-card__body">
+            <div class="lm-cp-card__hd">
+                <span class="lm-cp-card__nm">{{name}}</span>
+                <span class="lm-badge lm-badge--{{tone}}">{{status}}</span>
+            </div>
+            <div class="lm-cp-card__path">{{#str}}cp_path, local_learnova_course{{/str}} {{path}}</div>
+            <div class="lm-cp-card__desc">{{description}}</div>
+        </div>
+    </div>
+    {{/cards}}
+</div>
+<div class="lm-empty" data-region="cp-nomatch" hidden>
+    <div class="lm-empty__title">{{#str}}cp_nomatch_title, local_learnova_course{{/str}}</div>
+    <div class="lm-empty__desc">{{#str}}cp_nomatch_desc, local_learnova_course{{/str}}</div>
+</div>
+{{/hascards}}
+
+{{^hascards}}
+<div class="lm-card">
+    <div class="lm-card__body">
+        <div class="lm-empty">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.746 3.746 0 0121 12z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <div class="lm-empty__title">{{#str}}cp_none_title, local_learnova_course{{/str}}</div>
+            <div class="lm-empty__desc">{{#str}}cp_none_desc, local_learnova_course{{/str}}</div>
+        </div>
+    </div>
+</div>
+{{/hascards}}
+
+<div class="lm-cp-manage">
+    <a href="{{manageurl}}">{{#str}}cp_manage, local_learnova_course{{/str}}</a>
+</div>
+
+{{#canadd}}
+{{! ── Slide-in: competency picker ─────────────────────────────────────────
+    Framework + search + checklist, all filtered in place; adding calls the
+    native core_competency_add_competency_to_course web service, so permissions
+    and events stay Moodle's. }}
+<div class="lm-slide-veil" data-region="cp-veil"></div>
+<div class="lm-slide" data-region="cp-slide" data-courseid="{{courseid}}" role="dialog" aria-modal="true">
+    <div class="lm-slide__top">
+        <div>
+            <div class="lm-slide__badge">{{#str}}cp_badge, local_learnova_course{{/str}}</div>
+            <div class="lm-slide__title">{{#str}}cp_add, local_learnova_course{{/str}}</div>
+        </div>
+        <button type="button" class="lm-slide__x" data-action="cp-close"
+            aria-label="{{#str}}closebuttontitle, core{{/str}}">
+            <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+        </button>
+    </div>
+
+    <div class="lm-slide__body">
+        <div class="lm-field">
+            <label class="lm-label" for="cp-framework">{{#str}}cp_framework, local_learnova_course{{/str}}</label>
+            <select class="lm-select" id="cp-framework" data-action="cp-framework">
+                {{#frameworks}}<option value="{{id}}"{{#selected}} selected{{/selected}}>{{name}}</option>{{/frameworks}}
+            </select>
+        </div>
+        <div class="lm-field">
+            <label class="lm-label" for="cp-search">{{#str}}cp_search, local_learnova_course{{/str}}</label>
+            <input class="lm-input" type="search" id="cp-search" data-action="cp-search"
+                placeholder="{{#str}}cp_search_ph, local_learnova_course{{/str}}">
+        </div>
+
+        {{#frameworks}}
+        <div data-region="cp-fw" data-fw="{{id}}"{{^selected}} hidden{{/selected}}>
+            {{#competencies}}
+            <label class="lm-check lm-cp-pick" data-name="{{name}}">
+                <input type="checkbox" value="{{id}}" data-region="cp-pick"{{#inuse}} checked disabled{{/inuse}}>
+                <span>{{name}}{{#idnumber}} <span class="lm-muted">({{idnumber}})</span>{{/idnumber}}</span>
+                {{#inuse}}<span class="lm-badge lm-badge--muted">{{#str}}cp_inuse, local_learnova_course{{/str}}</span>{{/inuse}}
+            </label>
+            {{/competencies}}
+        </div>
+        {{/frameworks}}
+    </div>
+
+    <div class="lm-slide__ft">
+        <button type="button" class="lm-btn lm-btn--primary" data-action="cp-save">{{#str}}cp_add_selected, local_learnova_course{{/str}}</button>
+        <button type="button" class="lm-btn lm-btn--secondary" data-action="cp-close">{{#str}}cancel, core{{/str}}</button>
+    </div>
+</div>
+{{/canadd}}
+{{/disabled}}
+{{#js}}
+require(['local_learnova_course/competencies'], function(C) {
+    C.init();
+});
+{{/js}}

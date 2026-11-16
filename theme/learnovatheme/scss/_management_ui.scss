@@ -1,0 +1,858 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// Learnova Management UI — component library (lm-*)
+//
+// Reusable primitives for the Course Management panels (Participants, Grade
+// Overview, Reports, …) and any custom Learnova admin UI, ported from the
+// learnova_course_management_v1 mock. Consume by adding classes to your OWN
+// markup — e.g. <button class="lm-btn lm-btn--primary">. Because every class is
+// `lm-` namespaced, nothing here can collide with Bootstrap/Moodle, so the
+// primitives are safe to use unscoped anywhere the theme CSS loads.
+//
+// NOT for the native-form embeds (Course Settings): those adapt Moodle's own
+// markup (fieldset/.fitem/.form-control) via body.learnova-cm-embed and only
+// share the design TOKENS below — see post.scss.
+//
+// Appended to the compiled sheet by the $THEME->scss closure in config.php.
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ── Design tokens ────────────────────────────────────────────────────────────
+// This library defines none of its own any more. The status colours
+// (--learnova-success/warn/danger/violet/green + their -bg/-border/-fg pairs)
+// and --learnova-border-solid all live in the global :root in post.scss,
+// because the native chrome consumes the very same values — .badge / .status-*
+// / .tag-* the status pairs, and every native table the solid border.
+
+// ── Buttons ──────────────────────────────────────────────────────────────────
+.lm-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    height: 38px;
+    padding: 0 20px;
+    font-family: var(--fn);
+    font-size: 13px;
+    font-weight: 700;
+    border: 1px solid transparent;
+    border-radius: var(--learnova-radius);
+    cursor: pointer;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background .12s, border-color .12s, color .12s;
+
+    svg { width: 15px; height: 15px; }
+    &:disabled, &.is-disabled { opacity: .5; cursor: not-allowed; }
+}
+.lm-btn--primary {
+    background: var(--learnova-teal-deep);
+    border-color: var(--learnova-teal-deep);
+    color: #fff;
+    &:hover, &:focus { background: var(--learnova-teal-mid); border-color: var(--learnova-teal-mid); color: #fff; text-decoration: none; }
+}
+.lm-btn--secondary {
+    background: var(--learnova-bg);
+    border-color: var(--learnova-border-solid);
+    color: var(--learnova-iron);
+    font-weight: 600;
+    &:hover, &:focus { background: #fff; border-color: var(--learnova-stone); color: var(--learnova-iron); text-decoration: none; }
+}
+.lm-btn--danger {
+    background: var(--learnova-danger);
+    border-color: var(--learnova-danger);
+    color: #fff;
+    &:hover, &:focus { background: var(--learnova-danger-hover); border-color: var(--learnova-danger-hover); color: #fff; text-decoration: none; }
+}
+.lm-btn--sm { height: 32px; padding: 0 14px; font-size: 12px; border-radius: 7px; }
+.lm-btn-row { display: flex; gap: 10px; margin-top: 6px; flex-wrap: wrap; }
+
+// ── Card ─────────────────────────────────────────────────────────────────────
+// Geometry comes from %lnv-accordion-card / %lnv-accordion-head in post.scss —
+// the single definition shared with the collapsible section cards of the
+// embedded native forms (Course Settings, gradebook import/export). Only what
+// is specific to our own markup lives here.
+.lm-card { @extend %lnv-accordion-card; }
+.lm-card__hd {
+    @extend %lnv-accordion-head;
+    border-bottom: 1px solid var(--learnova-border-solid);
+
+    &--toggle { cursor: pointer; user-select: none; }
+    &.is-collapsed {
+        // Collapsed: the divider would dangle across the card's own rounded
+        // bottom edge, so it goes with the body it belonged to.
+        border-bottom-color: transparent;
+        .lm-card__chevron { transform: rotate(-90deg); }
+    }
+}
+.lm-card__title { font-family: var(--fn); font-size: 14px; font-weight: 700; color: var(--learnova-charcoal); }
+.lm-card__chevron { width: 16px; height: 16px; color: var(--learnova-stone); transition: transform .15s; flex-shrink: 0; }
+.lm-card__body { padding: 20px; }
+
+// ── Form fields ──────────────────────────────────────────────────────────────
+.lm-field {
+    margin-bottom: 16px;
+    &:last-child { margin-bottom: 0; }
+}
+// Shares %lnv-form-label (post.scss) with the global native .form-label, so the
+// panel labels and Moodle's own labels stay identical. Only layout is local.
+.lm-label {
+    @extend %lnv-form-label;
+    display: block;
+    margin-bottom: 6px;
+}
+.lm-label__req { color: var(--learnova-danger); }
+
+%lm-control {
+    width: 100%;
+    max-width: 100%;
+    background: #fff;
+    border: 1px solid var(--learnova-border-solid);
+    border-radius: var(--learnova-radius);
+    padding: 9px 12px;
+    font-family: var(--fb);
+    font-size: 13px;
+    color: var(--learnova-iron);
+    outline: none;
+    transition: border-color .12s, box-shadow .12s;
+    &:focus { border-color: var(--learnova-teal); box-shadow: 0 0 0 2px rgba(0, 177, 172, .15); }
+}
+.lm-input { @extend %lm-control; }
+.lm-textarea { @extend %lm-control; min-height: 88px; resize: vertical; }
+.lm-select {
+    @extend %lm-control;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    cursor: pointer;
+    padding-right: 34px;
+    background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%23888888'><path fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 14px 14px;
+}
+.lm-hint { margin-top: 5px; font-size: 11px; color: var(--learnova-stone); line-height: 1.5; }
+
+// Field grids (mock .f2 / .f3). Collapse to one column when cramped.
+.lm-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.lm-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+@media (max-width: 640px) {
+    .lm-grid-2, .lm-grid-3 { grid-template-columns: 1fr; }
+}
+
+.lm-check {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 9px;
+    font-size: 13px;
+    color: var(--learnova-iron);
+    cursor: pointer;
+    &:last-child { margin-bottom: 0; }
+    input { width: 15px; height: 15px; accent-color: var(--learnova-teal); cursor: pointer; flex-shrink: 0; }
+}
+
+// ── Toolbar (search + filters row) ───────────────────────────────────────────
+.lm-toolbar {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 16px;
+
+    // Search/select inside a toolbar size to content, not full width.
+    .lm-input, .lm-select { width: auto; }
+    .lm-input { flex: 1 1 220px; min-width: 180px; max-width: 340px; }
+}
+.lm-toolbar__count { margin-left: auto; font-size: 12px; color: var(--learnova-stone); }
+
+// ── Inline text button (subtle row action, the mock's "Edit") ────────────────
+.lm-linkbtn {
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    font-family: var(--fn);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--learnova-stone);
+    text-decoration: none;
+
+    &:hover { color: var(--learnova-teal-deep); text-decoration: none; }
+
+    // Danger variant — the row "Delete" (unenrol) action.
+    &--danger {
+        color: var(--learnova-danger);
+        &:hover { color: var(--learnova-danger-hover); }
+    }
+}
+
+// Row actions cell: keep Edit / Delete on one line, right-aligned, spaced.
+.lm-table__actions {
+    text-align: right;
+    white-space: nowrap;
+
+    .lm-linkbtn + .lm-linkbtn { margin-left: 14px; }
+}
+// The column HEADER has to follow its cells. `.lm-table th` carries
+// text-align: left from %lnv-table-head and out-specifies the plain class
+// (0,1,1 vs 0,1,0), so the alignment is restated at the same weight — without
+// this the "Actions" label sits far left of the buttons underneath it.
+.lm-table th.lm-table__actions { text-align: right; }
+
+// ── Bulk selection bar (revealed when ≥1 row is checked) ─────────────────────
+.lm-bulkbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 9px 14px;
+    margin-bottom: 14px;
+    background: var(--learnova-mist);
+    border-radius: 9px;
+}
+.lm-bulkbar__count { font-family: var(--fn); font-size: 13px; font-weight: 700; color: var(--learnova-teal-deep); }
+
+// ── Edit-participant modal body (loaded as a fragment) ───────────────────────
+.lm-editpt {
+    &__user {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 18px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid var(--learnova-border-solid);
+    }
+    &__name { font-family: var(--fn); font-size: 15px; font-weight: 700; color: var(--learnova-charcoal); }
+    &__email { font-size: 13px; color: var(--learnova-stone); }
+    &__group {
+        margin-bottom: 16px;
+        &:last-child { margin-bottom: 0; }
+        .lm-label { margin-bottom: 8px; }
+    }
+}
+.lm-checklist {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 220px;
+    overflow-y: auto;
+}
+
+// Native enrol_user_enrolment_form restyled inside the modal (same moodleform
+// markup as Course Settings, so the same field patterns apply — scoped here to
+// .lm-editpt instead of the cm-embed body).
+.lm-editpt {
+    &__enrol { margin-bottom: 14px; &:last-child { margin-bottom: 0; } }
+    &__method { font-size: 13px; font-weight: 600; color: var(--learnova-charcoal); margin-bottom: 10px; }
+
+    .mform { margin: 0; }
+    // Stack label over control, drop Bootstrap grid gutters.
+    .fitem {
+        display: block;
+        margin: 0 0 12px;
+        &.row { margin-left: 0; margin-right: 0; }
+        &:last-child { margin-bottom: 0; }
+        > [class*="col-"] { flex: 0 0 100%; max-width: 100%; padding-left: 0; padding-right: 0; }
+    }
+    // 12px sentence-case label; text-transform/letter-spacing stated so the
+    // global uppercase .col-form-label rule (post.scss) can't leak in.
+    .col-form-label, .fitemtitle {
+        display: block;
+        text-align: left;
+        font-family: var(--fb);
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: normal;
+        text-transform: none;
+        color: var(--learnova-iron);
+        padding: 0;
+        margin-bottom: 5px;
+    }
+    .felement { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 0; }
+    .fstatic { font-size: 13px; color: var(--learnova-iron); }
+    .form-label-addon { display: none; } // native per-field help "?" — omit like the mock.
+
+    select, input[type="text"], input[type="number"] {
+        border: 1px solid var(--learnova-border-solid);
+        border-radius: var(--learnova-radius);
+        padding: 7px 10px;
+        font-family: var(--fb);
+        font-size: 13px;
+        color: var(--learnova-iron);
+        background: #fff;
+        &:focus { border-color: var(--learnova-teal); box-shadow: 0 0 0 2px rgba(0, 177, 172, .15); outline: none; }
+    }
+    select {
+        appearance: none;
+        -webkit-appearance: none;
+        cursor: pointer;
+        padding-right: 30px;
+        background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%23888888'><path fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd'/></svg>");
+        background-repeat: no-repeat;
+        background-position: right 10px center;
+        background-size: 13px 13px;
+    }
+    input[type="checkbox"] { accent-color: var(--learnova-teal); }
+
+    // date_time_selector: strip the fieldset chrome only. The dropdowns stay
+    // native and complete (day / month / year / hour / minute + calendar), so
+    // enrolment times keep their full precision.
+    fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
+    fieldset > legend { display: none; }
+}
+
+// ── Table ────────────────────────────────────────────────────────────────────
+// IMPORTANT: render <table> as `class="lm-table table-reboot"`. Moodle applies a
+// full 1px cell border to every `table:not(.table):not(.table-reboot)…` (a
+// high-specificity 0,4,2 rule that out-ranks .lm-table), so without the
+// `table-reboot` opt-out you get an unwanted column grid + outer border.
+.lm-muted { color: var(--learnova-stone); }
+.lm-table-wrap { overflow-x: auto; }
+.lm-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: transparent;
+
+    // Select column: narrow, centred, teal-accented checkbox.
+    &__check {
+        width: 40px;
+        text-align: center;
+        input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--learnova-teal); cursor: pointer; vertical-align: middle; }
+    }
+
+    // Row-divider borders ONLY — no side/top/outer borders. The explicit
+    // border:0 kills any left/right/top border a host page's table styles might
+    // otherwise leave on the cells (only the bottom divider is ours).
+    th, td {
+        border: 0;
+        background: transparent;
+        vertical-align: middle;
+    }
+    // Header/cell geometry shared with global native tables via placeholders
+    // (post.scss). Border colour stays local: panels use the solid grey, native
+    // tables use the translucent brand border.
+    th {
+        @extend %lnv-table-head;
+        border-bottom: 2px solid var(--learnova-border-solid);
+    }
+    td {
+        @extend %lnv-table-cell;
+        border-bottom: 1px solid var(--learnova-border-solid);
+    }
+    // Last body row: no divider (the card border closes it off).
+    tbody tr:last-child td { border-bottom: 0; }
+    tbody tr:hover td { background: #FAFAFA; }
+}
+.lm-table__name { font-weight: 600; color: var(--learnova-charcoal); }
+.lm-ucell { display: flex; align-items: center; gap: 9px; }
+.lm-avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    background: var(--learnova-mist);
+    color: var(--learnova-teal-deep);
+    font-family: var(--fn);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+// ── Badge / status pill (unifies the mock's .rbadge / .cs-badge / .sactive) ──
+// Shares %lnv-pill-label (post.scss) with .badge / .status-* / .tag-*, so every
+// pill label in the theme has one geometry. Only the tighter padding and the
+// 11px size are specific to the panels; the colour pairs are the same tokens
+// the global .status-* / .tag-* variants use.
+.lm-badge {
+    @extend %lnv-pill-label;
+    padding: 2px 8px;
+    font-size: 11px;
+
+    &--teal    { background: var(--learnova-mist); color: var(--learnova-teal-deep); }
+    &--muted   { background: var(--learnova-bg); color: var(--learnova-stone); }
+    &--success { background: var(--learnova-success-bg); color: var(--learnova-success); }
+    &--warn    { background: var(--learnova-warn-bg); color: var(--learnova-warn); }
+    &--danger  { background: var(--learnova-danger-bg); color: var(--learnova-danger); }
+}
+
+// ── Sub-tabs (segmented control) ─────────────────────────────────────────────
+.lm-subtabs {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 2px;
+    width: fit-content;
+    padding: 3px;
+    margin-bottom: 20px;
+    background: var(--learnova-bg);
+    border: 1px solid var(--learnova-border);
+    border-radius: 10px;
+}
+.lm-subtab {
+    padding: 6px 13px;
+    border: none;
+    border-radius: 7px;
+    background: none;
+    font-family: var(--fn);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--learnova-stone);
+    cursor: pointer;
+
+    &.is-on { background: #fff; color: var(--learnova-teal-deep); box-shadow: 0 1px 4px rgba(0, 0, 0, .08); }
+}
+
+// ── Pagination ───────────────────────────────────────────────────────────────
+.lm-pager {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 14px;
+    font-size: 12px;
+    color: var(--learnova-stone);
+}
+.lm-pager__btns { display: flex; gap: 4px; }
+.lm-pager__btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border: 1px solid var(--learnova-border-solid);
+    border-radius: 6px;
+    background: #fff;
+    font-family: var(--fn);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--learnova-iron);
+    cursor: pointer;
+
+    &.is-on { background: var(--learnova-teal-deep); color: #fff; border-color: var(--learnova-teal-deep); }
+    &--wide { width: auto; padding: 0 10px; }
+}
+
+// ── Empty state ──────────────────────────────────────────────────────────────
+.lm-empty {
+    text-align: center;
+    padding: 48px 24px;
+    color: var(--learnova-stone);
+    svg { width: 40px; height: 40px; margin: 0 auto 12px; opacity: .25; display: block; }
+}
+.lm-empty__title { font-family: var(--fn); font-size: 14px; font-weight: 700; color: var(--learnova-iron); margin-bottom: 5px; }
+.lm-empty__desc { font-size: 13px; line-height: 1.6; }
+
+// ── Notice banner ────────────────────────────────────────────────────────────
+.lm-notice {
+    padding: 14px 16px;
+    margin-bottom: 16px;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    font-size: 13px;
+    line-height: 1.6;
+
+    &--danger { background: var(--learnova-danger-bg); border-color: var(--learnova-danger-border); color: var(--learnova-danger-fg); }
+    // Outline variant — white card with a pink border, the mock's warning card
+    // for destructive tools (Course Reuse → Reset). Quieter than the filled one,
+    // which suits a note sitting above a whole form rather than an inline alert.
+    &--danger-outline { background: #fff; border-color: var(--learnova-danger-border); color: var(--learnova-danger-fg); }
+    &--warn   { background: var(--learnova-cream); border-color: var(--learnova-warn-border); color: var(--learnova-warn); }
+    &--info   { background: var(--learnova-mist); border-color: rgba(0, 177, 172, .25); color: var(--learnova-teal-deep); }
+}
+
+// ── Grade Overview (single learner, rows grouped by section) ─────────────────
+// A flex "table" (not a real <table>) so each row can mix a type badge, a
+// flexible name and several fixed-width numeric columns. Ported from the mock's
+// .gh / .gr / .g-* into the lm- namespace.
+.lm-grade-viewas {
+    max-width: 320px;
+    margin-bottom: 18px;
+    .lm-label { margin-bottom: 6px; }
+}
+.lm-grade-head {
+    font-family: var(--fn);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+    color: var(--learnova-stone);
+    padding: 8px 0 6px;
+    border-bottom: 1px solid var(--learnova-border-solid);
+    margin: 16px 0 2px;
+    &:first-child { margin-top: 0; }
+}
+.lm-grade-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 0;
+    border-bottom: 1px solid var(--learnova-border-solid);
+    &:last-child { border-bottom: none; }
+}
+.lm-grade-ico {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    background: var(--learnova-mist);
+    color: var(--learnova-teal-deep);
+    svg { width: 13px; height: 13px; }
+
+    &--quiz     { background: var(--learnova-cream);     color: var(--learnova-warn); }
+    &--assign   { background: var(--learnova-violet-bg); color: var(--learnova-violet); }
+    &--scorm    { background: var(--learnova-mist);      color: var(--learnova-teal-deep); }
+    &--resource { background: var(--learnova-green-bg);  color: var(--learnova-green); }
+}
+.lm-grade-nm {
+    flex: 1;
+    min-width: 0;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--learnova-iron);
+}
+.lm-grade-type {
+    display: block;
+    margin-bottom: 1px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .4px;
+    text-transform: uppercase;
+    color: var(--learnova-stone);
+}
+.lm-grade-pct {
+    flex-shrink: 0;
+    width: 110px;
+    text-align: right;
+    font-family: var(--fn);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--learnova-teal-deep);
+    &.is-empty { font-weight: 400; font-style: italic; color: var(--learnova-stone); }
+}
+.lm-grade-rng { flex-shrink: 0; width: 60px; text-align: center; font-size: 12px; color: var(--learnova-stone); }
+.lm-grade-fb  { flex-shrink: 0; width: 90px; text-align: center; font-size: 12px; color: var(--learnova-stone); }
+.lm-grade-cn  { flex-shrink: 0; width: 80px; text-align: right; font-family: var(--fn); font-size: 12px; font-weight: 600; color: var(--learnova-iron); }
+
+.lm-grade-total {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 14px;
+    padding: 12px 16px;
+    background: var(--learnova-mist);
+    border-radius: 10px;
+    &__lbl { flex: 1; font-family: var(--fn); font-size: 13px; font-weight: 700; color: var(--learnova-teal-deep); }
+    &__val { font-family: var(--fn); font-size: 15px; font-weight: 800; color: var(--learnova-teal-deep); }
+}
+
+// Narrow screens: drop the least-critical numeric columns so the row keeps its
+// type + name + percentage rather than overflowing.
+@media (max-width: 720px) {
+    .lm-grade-fb, .lm-grade-cn { display: none; }
+}
+
+// ── Grader Report (all learners, horizontal scroll) ──────────────────────────
+// Reuses .lm-table; adds a scroll frame, a min-width so columns don't crush,
+// centred numeric cells and the average summary row.
+.lm-grader-wrap {
+    border: 1px solid var(--learnova-border-solid);
+    border-radius: 10px;
+}
+.lm-grader {
+    min-width: 760px;
+
+    // Header cells sit on the tinted band (mock .gtbl th).
+    th { background: var(--learnova-bg); white-space: nowrap; }
+    &__name { min-width: 160px; }
+    &__c { text-align: center; }
+
+    // Score / total cells: centred, teal when graded, stone dash when empty.
+    &__s, &__t { text-align: center; font-family: var(--fn); white-space: nowrap; }
+    &__s { font-weight: 700; color: var(--learnova-teal-deep); }
+    &__t { font-weight: 800; color: var(--learnova-charcoal); }
+    &__s.is-na, &__t.is-na { font-weight: 400; color: var(--learnova-stone); }
+
+    // Overall average row: tinted band, muted label, sits flush at the bottom.
+    &__avg td {
+        background: var(--learnova-bg);
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--learnova-stone);
+    }
+    &__avg .lm-grader__s { color: var(--learnova-teal-deep); }
+    &__avg .lm-grader__t { color: var(--learnova-charcoal); }
+    tbody tr.lm-grader__avg:hover td { background: var(--learnova-bg); }
+}
+.lm-grader-foot {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+    font-size: 12px;
+    color: var(--learnova-stone);
+}
+.lm-grader-showall {
+    font-weight: 600;
+    color: var(--learnova-teal-deep);
+    text-decoration: none;
+    &:hover { text-decoration: underline; color: var(--learnova-teal-deep); }
+}
+
+// ── Page header (eyebrow / title / subtitle) ─────────────────────────────────
+.lm-page-eyebrow {
+    font-family: var(--fn);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .7px;
+    text-transform: uppercase;
+    color: var(--learnova-stone);
+    margin-bottom: 6px;
+}
+.lm-page-title {
+    font-family: var(--fn);
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -.3px;
+    color: var(--learnova-charcoal);
+    margin: 0 0 3px;
+}
+.lm-page-sub { font-size: 13px; color: var(--learnova-stone); margin: 0 0 22px; }
+
+// ── Activity group card (Course Management "Activities" panel) ───────────────
+// One collapsible .lm-card per activity type. The rows are built from Moodle's
+// activity-overview API, so every cell except the name is core-rendered HTML
+// (humandate, action buttons, the forum subscribe toggle and digest select) —
+// those are only sized/aligned here, never restyled from scratch.
+.lm-actgrp {
+    &__ttl { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    &__cnt { font-size: 12px; color: var(--learnova-stone); }
+    &__body { padding-top: 6px; }
+
+    // Core cells arrive with Bootstrap utility spacing; keep them on one line
+    // and let the table's own cell padding do the spacing.
+    &__tbl td > * { margin-bottom: 0; }
+    &__tbl td .btn { white-space: nowrap; }
+    &__tbl td .form-select, &__tbl td select { width: auto; min-width: 150px; }
+}
+
+// Tinted icon chip — same slugs and tints as the course landing
+// (.learnova-cl__act-ico), from the shared $learnova-act-tints map in pre.scss.
+.lm-actico {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 7px;
+    flex-shrink: 0;
+    background: var(--learnova-gray-light);
+
+    img { width: 14px; height: 14px; object-fit: contain; }
+
+    @each $name, $bg in $learnova-act-tints {
+        &--#{$name} { background: $bg; }
+    }
+}
+
+// Name cell: icon + activity name over its section name.
+.lm-actrow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+
+    &__txt { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+    &__nm {
+        font-weight: 600;
+        color: var(--learnova-charcoal);
+        text-decoration: none;
+        &:hover { color: var(--learnova-teal-deep); text-decoration: underline; }
+    }
+    &__sub { font-size: 11px; font-weight: 400; color: var(--learnova-stone); }
+}
+
+// ── Grade summary / overview rows ────────────────────────────────────────────
+// Item type sits above its name (the mock's .gitem-type), and the Overview
+// report names the learner above its table.
+.lm-gitem-type {
+    display: block;
+    font-family: var(--fn);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+    color: var(--learnova-stone);
+    margin-bottom: 2px;
+}
+.lm-or-user { margin-bottom: 14px; }
+
+// ── Slide-in panel (Question Banks → create a question) ──────────────────────
+// Geometry and motion come from %lnv-slide-panel in post.scss — the same
+// definition the course landing's edit/add panels use — so the two slide in
+// identically. Width matches those panels (600px).
+.lm-slide {
+    @extend %lnv-slide-panel;
+    width: 600px;
+    max-width: 100vw;
+    right: -640px;
+
+    &__top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 20px;
+        border-bottom: 1px solid var(--learnova-border);
+        flex-shrink: 0;
+    }
+    &__badge {
+        display: inline-block;
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: .8px;
+        text-transform: uppercase;
+        color: var(--learnova-teal-deep);
+        background: var(--learnova-mist);
+        padding: 3px 8px;
+        border-radius: 4px;
+    }
+    &__title { font-size: 15px; font-weight: 800; color: var(--learnova-charcoal); margin-top: 4px; }
+    &__x {
+        background: none;
+        border: 0;
+        cursor: pointer;
+        color: var(--learnova-stone);
+        padding: 6px;
+        border-radius: 7px;
+        display: flex;
+        align-items: center;
+        &:hover { background: var(--learnova-bg); }
+        svg { width: 18px; height: 18px; }
+    }
+    &__body { flex: 1; overflow-y: auto; padding: 20px; }
+    &__frame { flex: 1; border: 0; width: 100%; background: #fff; }
+}
+
+// Backdrop shared by the slide-in.
+.lm-slide-veil {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, .35);
+    z-index: 1080;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .28s;
+
+    &.is-open { opacity: 1; visibility: visible; }
+}
+
+// Question-type chooser inside the slide-in: one tile per creatable qtype.
+.lm-qtypes {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+.lm-qtype {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 12px;
+    border: 1px solid var(--learnova-border-solid);
+    border-radius: var(--learnova-radius);
+    background: #fff;
+    cursor: pointer;
+    text-align: left;
+    font-family: var(--fb);
+    font-size: 13px;
+    color: var(--learnova-iron);
+    transition: border-color .12s, background .12s;
+
+    &:hover { border-color: var(--learnova-teal); background: var(--learnova-mist); }
+    img { width: 20px; height: 20px; object-fit: contain; flex-shrink: 0; }
+}
+
+// ── Clickable table row (Badges → open overview) ─────────────────────────────
+// The whole row is the entry point, with the hint spelling that out; buttons
+// inside it stay clickable because the JS checks them first.
+.lm-rowlink {
+    cursor: pointer;
+    &:hover td { background: var(--learnova-mist); }
+    &:focus-visible { outline: 2px solid var(--learnova-teal); outline-offset: -2px; }
+
+    &__hint {
+        display: block;
+        margin-top: 2px;
+        font-size: 11px;
+        color: var(--learnova-stone);
+    }
+}
+
+// Badge image cell.
+.lm-badge-img {
+    width: 48px;
+    img { width: 32px; height: 32px; object-fit: contain; border-radius: 8px; display: block; }
+}
+
+// ── Competencies panel ───────────────────────────────────────────────────────
+// Summary + progress on top (full width), then the competency cards two across.
+.lm-cp-summary { font-size: 13px; color: var(--learnova-iron); margin-bottom: 10px; }
+.lm-progress {
+    height: 6px;
+    background: var(--learnova-bg);
+    border-radius: 3px;
+    overflow: hidden;
+
+    &__bar { height: 100%; background: var(--learnova-teal); border-radius: 3px; }
+}
+.lm-cp-filter { margin-top: 16px; max-width: 380px; }
+
+.lm-cp-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 14px;
+
+    // The cards carry their own margin from .lm-card; the grid gap owns it here.
+    .lm-card { margin-bottom: 0; }
+}
+@media (max-width: 900px) {
+    .lm-cp-grid { grid-template-columns: 1fr; }
+}
+.lm-cp-card {
+    &__hd {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 6px;
+    }
+    &__nm { font-family: var(--fn); font-size: 14px; font-weight: 700; color: var(--learnova-charcoal); }
+    &__path { font-size: 11px; color: var(--learnova-stone); margin-bottom: 8px; }
+    &__desc { font-size: 13px; color: var(--learnova-iron); line-height: 1.6; }
+}
+.lm-cp-manage {
+    margin-top: 4px;
+    a {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--learnova-teal-deep);
+        text-decoration: none;
+        &:hover { text-decoration: underline; }
+    }
+}
+.lm-cp-pick {
+    justify-content: flex-start;
+    gap: 10px;
+    padding: 7px 0;
+    border-bottom: 1px solid var(--learnova-border-solid);
+    &:last-child { border-bottom: 0; }
+}
+
+// Slide-in footer (picker actions).
+.lm-slide__ft {
+    display: flex;
+    gap: 10px;
+    padding: 14px 20px;
+    border-top: 1px solid var(--learnova-border);
+    flex-shrink: 0;
+}

@@ -1,0 +1,94 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_learnova_course/activities
+
+    Course Management "Activities" panel body — one collapsible Learnova card
+    per activity type in the course, each holding a table with that type's own
+    columns (assignments get due date + submissions, forums get subscribed +
+    digest + discussions, …).
+
+    Every cell but the first is HTML rendered by Moodle's activity-overview API,
+    so the interactive ones (subscribe toggle, digest dropdown) keep working —
+    they register their own JS. The name cell is ours, with the Learnova
+    course-landing icon set.
+
+    Context: see \local_learnova_course\activities::context().
+}}
+{{#hasgroups}}
+{{#groups}}
+<div class="lm-card lm-actgrp" data-modname="{{modname}}">
+    <div class="lm-card__hd lm-card__hd--toggle{{#collapsed}} is-collapsed{{/collapsed}}"
+        data-action="act-toggle" role="button" tabindex="0"
+        aria-expanded="{{^collapsed}}true{{/collapsed}}{{#collapsed}}false{{/collapsed}}">
+        <span class="lm-actgrp__ttl">
+            <span class="lm-actico lm-actico--{{icontype}}"><img src="{{icon}}" alt=""></span>
+            <span class="lm-card__title">{{label}}</span>
+            <span class="lm-actgrp__cnt">{{count}}</span>
+        </span>
+        <svg class="lm-card__chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+    </div>
+
+    <div class="lm-card__body lm-actgrp__body"{{#collapsed}} hidden{{/collapsed}}>
+        <div class="lm-table-wrap">
+            <table class="lm-table table-reboot lm-actgrp__tbl">
+                <thead>
+                    <tr>
+                        <th>{{namelabel}}</th>
+                        {{#headers}}<th class="{{align}}">{{label}}</th>{{/headers}}
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#rows}}
+                    <tr>
+                        <td class="lm-table__name">
+                            <span class="lm-actrow">
+                                <span class="lm-actico lm-actico--{{icontype}}"><img src="{{icon}}" alt=""></span>
+                                <span class="lm-actrow__txt">
+                                    {{#hasurl}}<a class="lm-actrow__nm" href="{{url}}">{{name}}</a>{{/hasurl}}
+                                    {{^hasurl}}<span class="lm-actrow__nm">{{name}}</span>{{/hasurl}}
+                                    <span class="lm-actrow__sub">{{subtitle}}</span>
+                                </span>
+                            </span>
+                        </td>
+                        {{#cells}}<td class="{{align}}">{{{content}}}</td>{{/cells}}
+                    </tr>
+                    {{/rows}}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{{/groups}}
+{{/hasgroups}}
+
+{{^hasgroups}}
+<div class="lm-card">
+    <div class="lm-card__body">
+        <div class="lm-empty">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <div class="lm-empty__title">{{#str}}act_none_title, local_learnova_course{{/str}}</div>
+            <div class="lm-empty__desc">{{#str}}act_none_desc, local_learnova_course{{/str}}</div>
+        </div>
+    </div>
+</div>
+{{/hasgroups}}
+{{#js}}
+require(['local_learnova_course/activities'], function(A) {
+    A.init();
+});
+{{/js}}

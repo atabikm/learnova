@@ -1,0 +1,35 @@
+{{!
+    @template theme_learnovatheme/faq_setting
+
+    Admin-settings control for the FAQ item list. Renders a backing textarea
+    holding the JSON value (the only field that submits) plus the scaffolding
+    the theme_learnovatheme/faq_settings AMD module enhances into an
+    add / remove / reorder form. Labels are passed as data-* attributes so the
+    JS stays language-agnostic.
+
+    Context:
+        name        - POST field name for the backing textarea
+        id          - element id for the backing textarea
+        value       - current JSON value
+        max         - maximum number of items
+        addlabel    - "Add" button text
+        removelabel - per-row remove button text
+        uplabel     - per-row move-up button text
+        downlabel   - per-row move-down button text
+        questionph  - question input placeholder
+        answerph    - answer input placeholder
+        maxnote     - note shown when the max is reached
+}}
+<div class="learnova-faqset"
+     data-max="{{max}}"
+     data-add-label="{{addlabel}}"
+     data-remove-label="{{removelabel}}"
+     data-up-label="{{uplabel}}"
+     data-down-label="{{downlabel}}"
+     data-question-ph="{{questionph}}"
+     data-answer-ph="{{answerph}}">
+    <div class="learnova-faqset__rows"></div>
+    <p class="learnova-faqset__note text-muted" hidden>{{maxnote}}</p>
+    <button type="button" class="btn btn-secondary btn-sm learnova-faqset__add">+ {{addlabel}}</button>
+    <textarea class="learnova-faqset__data form-control" name="{{name}}" id="{{id}}" rows="6" spellcheck="false">{{value}}</textarea>
+</div>

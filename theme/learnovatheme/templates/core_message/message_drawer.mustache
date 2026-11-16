@@ -1,0 +1,54 @@
+{{!
+    Learnova theme override of core_message/message_drawer.
+
+    Identical to the upstream template — only the visible header string is
+    swapped to a theme-local lang string so the title in the drawer reads
+    "Messages" instead of the admin string "Messaging".
+}}
+{{< core/drawer}}
+    {{$tabindex}}-1{{/tabindex}}
+    {{$role}}dialog{{/role}}
+    {{$drawerattributes}}
+        aria-modal="true"
+        aria-labelledby="message-drawer-header-{{uniqid}}"
+    {{/drawerattributes}}
+    {{$drawercontent}}
+        <div id="message-drawer-{{uniqid}}" class="message-app" data-region="message-drawer" role="region" tabindex="0">
+            <h2 class="visually-hidden" id="message-drawer-header-{{uniqid}}">{{#str}} messagedrawer_title, theme_learnovatheme {{/str}}</h2>
+            <div class="closewidget text-end pe-2">
+                <a class="text-dark btn-link" data-action="closedrawer" href="#"
+                   title="{{#cleanstr}} closebuttontitle {{/cleanstr}}" aria-label="{{#cleanstr}} closebuttontitle {{/cleanstr}}"
+                >
+                    {{#pix}} i/window_close, core {{/pix}}
+                </a>
+            </div>
+            <div class="header-container position-relative" data-region="header-container">
+                {{> core_message/message_drawer_view_contacts_header }}
+                {{> core_message/message_drawer_view_conversation_header }}
+                {{> core_message/message_drawer_view_overview_header }}
+                {{> core_message/message_drawer_view_search_header }}
+                {{> core_message/message_drawer_view_settings_header }}
+            </div>
+            <div class="body-container position-relative" data-region="body-container">
+                {{> core_message/message_drawer_view_contact_body }}
+                {{> core_message/message_drawer_view_contacts_body }}
+                {{> core_message/message_drawer_view_conversation_body }}
+                {{> core_message/message_drawer_view_group_info_body }}
+                {{> core_message/message_drawer_view_overview_body }}
+                {{> core_message/message_drawer_view_search_body }}
+                {{> core_message/message_drawer_view_settings_body }}
+            </div>
+            <div class="footer-container position-relative" data-region="footer-container">
+                {{> core_message/message_drawer_view_conversation_footer }}
+                {{> core_message/message_drawer_view_overview_footer }}
+            </div>
+        </div>
+    {{/drawercontent}}
+{{/core/drawer}}
+
+{{#js}}
+require(['jquery', 'core_message/message_drawer'], function($, MessageDrawer) {
+    var root = $('#message-drawer-{{uniqid}}');
+    MessageDrawer.init(root, '{{uniqid}}', false);
+});
+{{/js}}

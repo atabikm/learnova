@@ -1,0 +1,34 @@
+{{!
+    @template theme_learnovatheme/course_setting
+
+    Admin-settings control for the front-page "Latest Courses" curated list.
+    Renders a backing textarea holding the JSON value (the only field that
+    submits) plus the scaffolding that theme_learnovatheme/course_settings
+    enhances into a dynamic add / remove / reorder form. Course options are
+    passed as JSON in a data-* attribute so the JS stays language-agnostic.
+
+    Context:
+        name         - POST field name for the backing textarea
+        id           - element id for the backing textarea
+        value        - current JSON value ([{courseid}, ...])
+        max          - maximum number of items
+        coursesjson  - JSON array of {id, name} course options
+        addlabel     - "Add" button text
+        removelabel  - per-row remove button text
+        uplabel      - per-row move-up button text
+        downlabel    - per-row move-down button text
+        courselabel  - Course select label
+        maxnote      - note shown when the max is reached
+}}
+<div class="learnova-courseset"
+     data-max="{{max}}"
+     data-courses="{{coursesjson}}"
+     data-remove-label="{{removelabel}}"
+     data-up-label="{{uplabel}}"
+     data-down-label="{{downlabel}}"
+     data-course-label="{{courselabel}}">
+    <div class="learnova-courseset__rows"></div>
+    <p class="learnova-courseset__note text-muted small" hidden>{{maxnote}}</p>
+    <button type="button" class="btn btn-secondary btn-sm learnova-courseset__add">+ {{addlabel}}</button>
+    <textarea class="learnova-courseset__data form-control mt-2" name="{{name}}" id="{{id}}" rows="3" spellcheck="false">{{value}}</textarea>
+</div>

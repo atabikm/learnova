@@ -1,0 +1,533 @@
+// ═══════════════════════════════════════════════════════════════════════════
+// LOGIN PAGE — layout/login.php + templates/core/loginform.mustache
+// Split screen: teal photo panel (left) + white form panel (right). Stacks on
+// tablets/phones, where the brand panel is hidden and a small logo shows.
+// Appended after post.scss, so --learnova-* custom properties are available.
+// ═══════════════════════════════════════════════════════════════════════════
+
+@mixin lnv-login-icon($file, $size: 16px) {
+    display: inline-block;
+    width: $size;
+    height: $size;
+    flex-shrink: 0;
+    background-color: currentColor;
+    -webkit-mask: url("[[pix:theme|icons/#{$file}]]") no-repeat center / contain;
+    mask: url("[[pix:theme|icons/#{$file}]]") no-repeat center / contain;
+}
+
+// Two ids so these beat Boost's `#page-wrapper #page` (display:flex) and the fixed-navbar `padding-top` on body.
+body.learnova-login-page {
+    padding-top: 0 !important;
+    background: #fff;
+
+    #page-wrapper { display: block; min-height: 100vh; }
+
+    #page-wrapper #page.lnv-login {
+        display: grid;
+        grid-template-columns: minmax(0, 66fr) minmax(420px, 34fr);
+        min-height: 100vh;
+        margin: 0;
+        padding: 0;
+        background: #fff;
+    }
+}
+
+// ── Left: brand panel ───────────────────────────────────────────────────────
+.lnv-login-hero {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    padding: 48px 60px 48px;
+    color: #fff;
+    background:
+        linear-gradient(180deg, rgba(0, 78, 76, 0.88) 0%, rgba(0, 52, 51, 0.92) 100%),
+        var(--lnv-login-bg) center / cover no-repeat,
+        var(--learnova-teal-abyss);
+
+    > * { position: relative; z-index: 1; }
+
+    &__deco {
+        position: absolute;
+        z-index: 0;
+        border-radius: 50%;
+        pointer-events: none;
+
+        &--1 {
+            top: -110px;
+            right: -110px;
+            width: 420px;
+            height: 420px;
+            background: rgba(0, 177, 172, 0.22);
+        }
+        &--2 {
+            bottom: -90px;
+            left: -70px;
+            width: 260px;
+            height: 260px;
+            background: rgba(255, 168, 0, 0.10);
+        }
+    }
+
+    &__logo {
+        display: inline-flex;
+        align-self: flex-start;
+        img { height: 34px; width: auto; }
+    }
+
+    &__body {
+        margin: auto 0;
+        padding: 48px 0;
+        max-width: 560px;
+    }
+
+    &__badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 16px;
+        border: 1px solid rgba(255, 168, 0, 0.45);
+        border-radius: 999px;
+        background: rgba(255, 168, 0, 0.10);
+        color: #FFA800;
+        font-family: var(--fn);
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 1.2px;
+        text-transform: uppercase;
+
+        &::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+    }
+
+    &__title {
+        margin: 28px 0 20px;
+        font-family: var(--fn);
+        font-size: clamp(32px, 3vw, 42px);
+        font-weight: 800;
+        line-height: 1.15;
+        letter-spacing: -0.5px;
+        color: #fff;
+        max-width: 440px;
+
+        span { display: block; color: #FFA800; }
+    }
+
+    &__lead {
+        margin: 0 0 40px;
+        max-width: 440px;
+        font-size: 16px;
+        line-height: 1.9;
+        color: rgba(255, 255, 255, 0.78);
+    }
+}
+
+.lnv-login-stats {
+    display: inline-flex;
+    margin: 0;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(6px);
+
+    &__item {
+        padding: 20px 28px;
+
+        & + & { border-left: 1px solid rgba(255, 255, 255, 0.14); }
+
+        dt {
+            font-family: var(--fn);
+            font-size: 26px;
+            font-weight: 800;
+            line-height: 1.1;
+            color: #fff;
+        }
+        dd {
+            margin: 4px 0 0;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+    }
+}
+
+.lnv-login-quote {
+    max-width: 500px;
+    margin: 0;
+    padding: 26px 26px 22px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.07);
+    backdrop-filter: blur(6px);
+
+    blockquote {
+        margin: 0 0 18px;
+        padding: 0;
+        border: 0;
+        font-size: 16px;
+        font-style: italic;
+        line-height: 1.75;
+        color: rgba(255, 255, 255, 0.85);
+    }
+
+    figcaption {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+
+        strong {
+            display: block;
+            font-family: var(--fn);
+            font-size: 16px;
+            font-weight: 700;
+            color: #fff;
+        }
+        small {
+            display: block;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+    }
+
+    &__avatar {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background: #FFA800;
+        color: var(--learnova-teal-abyss);
+        font-family: var(--fn);
+        font-size: 13px;
+        font-weight: 800;
+        flex-shrink: 0;
+    }
+
+    &__avatar-img {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        object-fit: cover;
+        flex-shrink: 0;
+    }
+}
+
+// ── Right: form panel ───────────────────────────────────────────────────────
+.lnv-login-panel {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background: #fff;
+
+    &__top {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 16px;
+        padding: 20px 56px;
+    }
+
+    &__mobilelogo { display: none; margin-right: auto; }
+
+    &__help {
+        font-size: 15px;
+        color: var(--learnova-stone);
+
+        a {
+            color: var(--learnova-teal-deep);
+            font-weight: 700;
+            text-decoration: none;
+            &:hover, &:focus { text-decoration: underline; }
+        }
+    }
+
+    &__content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        width: 100%;
+        max-width: 652px;
+        margin: 0 auto;
+        padding: 32px 56px;
+    }
+
+    &__footer {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px 24px;
+        padding: 16px 56px;
+        border-top: 1px solid var(--learnova-border);
+        font-size: 13px;
+        color: var(--learnova-stone);
+
+        img { height: 20px; width: auto; }
+    }
+
+    &__links {
+        display: flex;
+        a {
+            color: var(--learnova-iron);
+            text-decoration: none;
+            padding: 0 12px;
+            &:hover, &:focus { color: var(--learnova-teal-deep); }
+            & + a { border-left: 1px solid var(--learnova-border); }
+        }
+    }
+
+    &__copy { margin-left: auto; }
+}
+
+// ── Form ────────────────────────────────────────────────────────────────────
+.lnv-loginform {
+    width: 100%;
+
+    &__eyebrow {
+        margin: 0 0 8px;
+        font-family: var(--fn);
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 1.8px;
+        text-transform: uppercase;
+        color: var(--learnova-teal);
+    }
+
+    &__title {
+        margin: 0 0 10px;
+        font-family: var(--fn);
+        font-size: 30px;
+        font-weight: 800;
+        letter-spacing: -0.4px;
+        color: var(--learnova-charcoal);
+    }
+
+    &__sub {
+        margin: 0 0 32px;
+        font-size: 15px;
+        color: var(--learnova-stone);
+    }
+
+    &__alert { border-radius: 12px; font-size: 14px; }
+
+    &__idps { display: grid; gap: 10px; }
+
+    &__idp {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        height: 52px;
+        border: 1px solid #E3E6EA;
+        border-radius: 12px;
+        background: var(--learnova-mist-gray, #F2F4F7);
+        font-family: var(--fn);
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--learnova-charcoal);
+        text-decoration: none;
+        transition: border-color 0.15s ease, background 0.15s ease;
+
+        &:hover, &:focus {
+            border-color: var(--learnova-teal-deep);
+            background: var(--learnova-mist);
+            color: var(--learnova-charcoal);
+            text-decoration: none;
+        }
+    }
+
+    &__divider {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin: 26px 0 22px;
+        font-size: 14px;
+        color: var(--learnova-stone);
+
+        &::before, &::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #E3E6EA;
+        }
+    }
+
+    &__field {
+        margin-bottom: 20px;
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-family: var(--fn);
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--learnova-charcoal);
+        }
+    }
+
+    &__input {
+        position: relative;
+
+        input {
+            width: 100%;
+            height: 52px;
+            padding: 0 48px 0 46px;
+            border: 1px solid #E3E6EA;
+            border-radius: 12px;
+            background: var(--learnova-mist-gray, #F2F4F7);
+            font-size: 15px;
+            color: var(--learnova-charcoal);
+            outline: none;
+            transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+
+            &::placeholder { color: #A9AEB5; }
+
+            &:focus {
+                border-color: var(--learnova-teal-deep);
+                background: #fff;
+                box-shadow: 0 0 0 3px rgba(0, 177, 172, 0.12);
+            }
+        }
+
+        > .lnv-loginform__icon {
+            position: absolute;
+            top: 50%;
+            left: 16px;
+            transform: translateY(-50%);
+            color: #8A9099;
+            pointer-events: none;
+        }
+    }
+
+    &__reveal {
+        position: absolute;
+        top: 50%;
+        right: 8px;
+        transform: translateY(-50%);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        padding: 0;
+        border: 0;
+        border-radius: 8px;
+        background: transparent;
+        color: #6B7079;
+        cursor: pointer;
+
+        &:hover, &:focus-visible { color: var(--learnova-teal-deep); background: rgba(0, 0, 0, 0.04); }
+
+        &.is-revealed .lnv-loginform__icon--eye { @include lnv-login-icon('eye-off', 18px); }
+    }
+
+    &__meta {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin: 4px 0 24px;
+        font-size: 15px;
+
+        a {
+            color: var(--learnova-teal-deep);
+            font-weight: 700;
+            text-decoration: none;
+            &:hover, &:focus { text-decoration: underline; }
+        }
+    }
+
+    &__remember {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        margin: 0;
+        color: var(--learnova-iron);
+        cursor: pointer;
+
+        input {
+            width: 17px;
+            height: 17px;
+            margin: 0;
+            accent-color: var(--learnova-teal-deep);
+        }
+    }
+
+    &__submit {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        width: 100%;
+        height: 56px;
+        border: 0;
+        border-radius: 12px;
+        background: var(--learnova-teal-deep);
+        color: #fff;
+        font-family: var(--fn);
+        font-size: 17px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background 0.15s ease, transform 0.15s ease;
+
+        &:hover, &:focus-visible { background: var(--learnova-teal-mid); }
+        &:active { transform: translateY(1px); }
+        &:disabled { opacity: 0.7; cursor: progress; }
+    }
+
+    &__foot {
+        margin: 26px 0 0;
+        text-align: center;
+        font-size: 15px;
+        color: var(--learnova-stone);
+
+        a {
+            color: var(--learnova-teal-deep);
+            font-weight: 700;
+            text-decoration: none;
+            &:hover, &:focus { text-decoration: underline; }
+        }
+    }
+
+    &__guest, &__lang { margin-top: 12px; text-align: center; }
+
+    &__icon--envelope { @include lnv-login-icon('envelope'); }
+    &__icon--lock     { @include lnv-login-icon('lock'); }
+    &__icon--eye      { @include lnv-login-icon('eye', 18px); }
+    &__icon--arrow    { @include lnv-login-icon('arrow-right', 16px); }
+}
+
+// Non-login pages using this layout (forgot password, signup, …): give the
+// stock mform a clean look inside the panel.
+.lnv-login-panel__content {
+    > [role="main"], .mform { width: 100%; }
+}
+
+// ── Responsive ──────────────────────────────────────────────────────────────
+@media (max-width: 1199.98px) {
+    body.learnova-login-page #page-wrapper #page.lnv-login { grid-template-columns: minmax(0, 1fr) minmax(420px, 1fr); }
+    .lnv-login-hero { padding: 40px; }
+    .lnv-login-panel__top,
+    .lnv-login-panel__content,
+    .lnv-login-panel__footer { padding-left: 40px; padding-right: 40px; }
+}
+
+@media (max-width: 991.98px) {
+    body.learnova-login-page #page-wrapper #page.lnv-login { grid-template-columns: 1fr; }
+    .lnv-login-hero { display: none; }
+    .lnv-login-panel__mobilelogo { display: inline-flex; }
+    .lnv-login-panel__top { justify-content: space-between; }
+}
+
+@media (max-width: 575.98px) {
+    .lnv-login-panel__top,
+    .lnv-login-panel__content,
+    .lnv-login-panel__footer { padding-left: 16px; padding-right: 16px; }
+    .lnv-login-panel__help { font-size: 13px; }
+    .lnv-loginform__title { font-size: 24px; }
+    .lnv-login-panel__copy { margin-left: 0; }
+}

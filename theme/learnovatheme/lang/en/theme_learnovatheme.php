@@ -456,6 +456,12 @@ $string['sa_section_general'] = 'General Setting';
 $string['sa_section_suffix']  = 'Setting';
 // Bookmark bar: the current user's admin bookmarks, shown above the tabs.
 $string['sa_bookmarks']       = 'Bookmarks';
+// In-page viewer: admin pages open beside the sidebar instead of navigating away.
+$string['sa_viewer_back']     = 'Back to overview';
+$string['sa_viewer_reload']   = 'Reload page';
+$string['sa_viewer_newtab']   = 'Open in new tab';
+$string['sa_viewer_loading']  = 'Loading…';
+$string['sa_viewer_frame']    = 'Site administration page';
 
 // ── Focus mode (distraction-free activity view) ──────────────────────────────
 // Topbar.
@@ -548,3 +554,41 @@ $string['fm_scorm_status']      = 'Attempt status';
 // Quiz attempt progress indicator.
 $string['fm_quiz_pagelabel']    = 'Page {$a->page} of {$a->total}';
 $string['fm_quiz_dot']          = 'Question {$a}';
+
+// ── Login page (layout/login.php + templates/core/loginform.mustache) ──────
+$string['login_hero_badge']        = 'Portal Pembelajaran Karyawan';
+$string['login_hero_title']        = 'Setiap Hari adalah Kesempatan untuk';
+$string['login_hero_title_accent'] = 'Berkembang';
+$string['login_hero_lead']         = 'Masuk dan lanjutkan perjalanan belajar Anda. Ratusan modul pelatihan, program sertifikasi, dan jalur karier menanti.';
+$string['login_stat_courses']      = 'Modul Tersedia';
+$string['login_stat_learners']     = 'Learner Aktif';
+$string['login_stat_satisfaction'] = 'Tingkat Kepuasan';
+$string['login_quote_text']        = '"Platform ini benar-benar mengubah cara saya belajar. Materi yang relevan, bisa diakses kapan saja — dan progres saya terpantau langsung oleh atasan."';
+$string['login_quote_name']        = 'Rizky Amalia';
+$string['login_quote_initials']    = 'RA';
+$string['login_quote_role']        = 'Senior HR Manager · PT Learnova';
+$string['login_needhelp']          = 'Butuh bantuan?';
+$string['login_contactadmin']      = 'Hubungi Admin';
+$string['login_eyebrow']           = 'Selamat Datang Kembali';
+$string['login_title']             = 'Masuk ke Akun Anda';
+$string['login_subtitle']          = 'Gunakan kredensial akun korporat yang telah diberikan oleh tim HR.';
+$string['login_with']              = 'Masuk dengan {$a}';
+$string['login_with_google']       = 'Masuk dengan Google Workspace';
+$string['login_divider']           = 'atau masuk dengan email';
+$string['login_email']             = 'Email Korporat';
+$string['login_email_placeholder'] = 'nama@learnova.id';
+$string['login_password']          = 'Kata Sandi';
+$string['login_showpassword']      = 'Tampilkan kata sandi';
+$string['login_remember']          = 'Ingat saya';
+$string['login_forgot']            = 'Lupa kata sandi?';
+$string['login_submit']            = 'Masuk ke Platform';
+$string['login_noaccount']         = 'Belum punya akun?';
+$string['login_contacthr']         = 'Hubungi tim HR';
+$string['login_noaccount_suffix']  = 'untuk mendapatkan akses.';
+$string['login_privacy']           = 'Kebijakan Privasi';
+$string['login_guide']             = 'Panduan Pengguna';
+$string['settings_login_heading']      = 'Halaman Login';
+$string['settings_login_heading_desc'] = 'Pengaturan halaman masuk. Gambar latar memakai Hero image di atas.';
+$string['settings_login_guideurl']     = 'URL Panduan Pengguna';
+$string['settings_login_guideurl_desc'] = 'Tautan "Panduan Pengguna" di footer halaman login. Kosongkan untuk menyembunyikan.';
+

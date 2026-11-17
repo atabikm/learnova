@@ -27,6 +27,42 @@ require_once($CFG->dirroot . '/course/lib.php');
 // save/cancel/finish) clears the latch, which is also what tells the panel's JS
 // the user has left the embedded flow.
 global $SESSION, $CFG;
+
+// ── Site administration viewer ────────────────────────────────────
+// The Site administration outline (/admin/search.php) opens admin pages in a
+// panel to the right of its sidebar instead of navigating away (see
+// site_admin.js). Those pages render chrome-less here.
+//
+// The first load carries ?lsaembed=1, which latches the session. From then on,
+// any page the browser itself reports as loading into an iframe
+// (Sec-Fetch-Dest: iframe) stays chrome-less too — which is what keeps a
+// settings form POST, a redirect after save, or a link to another admin page
+// inside the panel without having to rewrite every URL Moodle generates.
+// Top-level renders (Sec-Fetch-Dest: document) are never affected by the
+// latch, so normal browsing is untouched. Browsers that do not send the header
+// fall back to site_admin.js re-requesting the page with ?lsaembed=1.
+$lsaembedparam = optional_param('lsaembed', 0, PARAM_INT);
+if ($lsaembedparam) {
+    $SESSION->learnova_lsaembed = 1;
+}
+$fetchdest = $_SERVER['HTTP_SEC_FETCH_DEST'] ?? '';
+if (is_siteadmin() && ($lsaembedparam
+        || (!empty($SESSION->learnova_lsaembed) && $fetchdest === 'iframe'))) {
+    $fakeblockshtml = $OUTPUT->blocks('side-pre', [], 'aside', true);
+    echo $OUTPUT->render_from_template('theme_learnovatheme/edit_embed', [
+        'output' => $OUTPUT,
+        // learnova-page-embed: the shared chrome-less page dressing;
+        // learnova-embed: the "still inside the panel" marker site_admin.js
+        // checks; learnova-sa-embed: admin-viewer specifics (_site_admin.scss).
+        'bodyattributes' => $OUTPUT->body_attributes(
+            ['learnova-page-embed', 'learnova-embed', 'learnova-sa-embed']),
+        'headercontent' => null,
+        'hasfakeblocks' => strpos($fakeblockshtml, 'data-block="_fake"') !== false,
+        'fakeblocks' => $fakeblockshtml,
+    ]);
+    return;
+}
+
 $clembedparam = optional_param('clembed', 0, PARAM_INT);
 $editformpath = $PAGE->url ? $PAGE->url->out_omit_querystring() : '';
 $iscoursesettings = (strpos($editformpath, '/course/edit.php') !== false);

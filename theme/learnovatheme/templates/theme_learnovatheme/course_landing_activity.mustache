@@ -13,7 +13,10 @@
     {{#editing}}<input type="checkbox" class="learnova-cl__bchk" data-cl-bulk-item data-cl-type="cm" data-cl-id="{{cmid}}" aria-label="{{#str}}cl_bulk_select, theme_learnovatheme{{/str}}">{{/editing}}
     <div class="learnova-cl__act-ico learnova-cl__act-ico--{{icon_type}}"><img src="{{icon}}" alt=""></div>
     {{#editing}}
-    <a class="learnova-cl__act-name{{#done}} learnova-cl__act-name--done{{/done}}" {{#hasurl}}href="{{url}}"{{/hasurl}}>{{name}}{{#current}} <span class="learnova-cl__act-tag">{{#str}}cl_continue, theme_learnovatheme{{/str}}</span>{{/current}}</a>
+    {{! Edit mode: a plain click opens the settings form in the right-hand
+        panel (course_landing.js, data-cl-action="edit"); the href stays so
+        Ctrl/Cmd/middle-click still opens the activity itself in a new tab. }}
+    <a class="learnova-cl__act-name{{#done}} learnova-cl__act-name--done{{/done}}" {{#hasurl}}href="{{url}}"{{/hasurl}} data-cl-action="edit" data-cl-edit-url="{{edit_url}}" data-cl-title="{{#str}}cl_edit_panel_activity, theme_learnovatheme{{/str}}" data-cl-badge="{{#str}}cl_edit_panel_activity_badge, theme_learnovatheme{{/str}}">{{name}}{{#current}} <span class="learnova-cl__act-tag">{{#str}}cl_continue, theme_learnovatheme{{/str}}</span>{{/current}}</a>
     {{/editing}}
     {{^editing}}
     <div class="learnova-cl__act-name{{#done}} learnova-cl__act-name--done{{/done}}">{{name}}{{#current}} <span class="learnova-cl__act-tag">{{#str}}cl_continue, theme_learnovatheme{{/str}}</span>{{/current}}</div>

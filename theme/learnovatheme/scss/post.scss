@@ -798,22 +798,7 @@ $icon-login: "[[pix:theme|icons/login]]";
     padding: 16px 18px 6px;
 }
 
-// Login page. Button (pill/teal) and inputs (focus/border) already come from the
-// $btn-*/$input-* variables; only the surface and card are set here. The custom
-// login modal (.learnova-login-modal) is separate and unaffected.
-.pagelayout-login {
-    // #page override matches Boost's white (0,1,1) so the tint shows.
-    #page { background-color: var(--learnova-mist-gray); }
-
-    // The card is .loginform, not .login-container / .login-form (those nest
-    // shadowed boxes). It ships transparent, so give it the full card shell.
-    .loginform {
-        background: #fff;
-        border-radius: 16px;
-        box-shadow: 0 24px 80px rgba(0, 0, 0, 0.08);
-        padding: 32px;
-    }
-}
+// Login page: see scss/_login.scss.
 
 // ═══════════════════════════════════════════════════════════════════════════
 // GLOBAL UTILITIES — cross-component sweep

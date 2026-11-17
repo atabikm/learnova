@@ -186,5 +186,44 @@
         {{/display}}
     {{/node.children}}
     </div>{{! .tab-content }}
+
+    {{! ── In-page viewer ─────────────────────────────────────────────────
+        Admin pages picked from the cards (or bookmarks) open here, beside the
+        sidebar, instead of navigating the whole window away. The iframe gets a
+        chrome-less render of the page (layout/drawers.php, lsaembed branch);
+        site_admin.js owns showing/hiding this region, the URL (?open=) and the
+        back button. Without JS the links simply navigate as before. }}
+    <div class="lsa-viewer" data-region="lsa-viewer" hidden>
+        <div class="lsa-viewer__bar">
+            <button type="button" class="lsa-viewer__back" data-action="lsa-close"
+                    title="{{#str}}sa_viewer_back, theme_learnovatheme{{/str}}">
+                <span class="lsa-viewer__back-ico" aria-hidden="true"></span>
+                <span class="visually-hidden">{{#str}}sa_viewer_back, theme_learnovatheme{{/str}}</span>
+            </button>
+            <nav class="lsa-viewer__crumbs" aria-label="breadcrumb">
+                <button type="button" class="lsa-viewer__crumb" data-action="lsa-close"
+                        data-region="lsa-viewer-tab"></button>
+                <span class="lsa-viewer__sep" aria-hidden="true">/</span>
+                <span class="lsa-viewer__title" data-region="lsa-viewer-title"></span>
+            </nav>
+            <div class="lsa-viewer__actions">
+                <button type="button" class="lsa-viewer__btn" data-action="lsa-reload"
+                        title="{{#str}}sa_viewer_reload, theme_learnovatheme{{/str}}">
+                    <span class="lsa-viewer__ico lsa-viewer__ico--reload" aria-hidden="true"></span>
+                    <span class="visually-hidden">{{#str}}sa_viewer_reload, theme_learnovatheme{{/str}}</span>
+                </button>
+                <a class="lsa-viewer__btn" data-region="lsa-viewer-newtab" href="#" target="_blank" rel="noopener"
+                   title="{{#str}}sa_viewer_newtab, theme_learnovatheme{{/str}}">
+                    <span class="lsa-viewer__ico lsa-viewer__ico--newtab" aria-hidden="true"></span>
+                    <span class="visually-hidden">{{#str}}sa_viewer_newtab, theme_learnovatheme{{/str}}</span>
+                </a>
+            </div>
+        </div>
+        <div class="lsa-viewer__body">
+            <div class="lsa-viewer__progress" aria-hidden="true"></div>
+            <iframe class="lsa-viewer__frame" data-region="lsa-viewer-frame" src="about:blank"
+                    title="{{#str}}sa_viewer_frame, theme_learnovatheme{{/str}}"></iframe>
+        </div>
+    </div>
 </div>{{! .lsa-main }}
 </div>{{! .learnova-siteadmin }}

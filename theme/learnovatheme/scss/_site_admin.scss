@@ -607,3 +607,195 @@ body.learnova-siteadmin-page {
         .main-inner { padding: 16px; }
     }
 }
+
+// ── In-page viewer ───────────────────────────────────────────────────────────
+// An admin page opened from the outline shows here, beside the sidebar, instead
+// of navigating the window away (site_admin.js). While it is open the page goes
+// "full screen right": the outline heading/search and the footer step aside and
+// the viewer fills the whole column under the navbar. The iframe scrolls on
+// its own, so Moodle's modals and sticky footers inside the page still anchor
+// to a viewport-sized frame.
+body.learnova-siteadmin-page.lsa-viewing {
+    #page-header,
+    .learnova-footer,
+    #page-footer {
+        display: none !important;
+    }
+
+    #page.drawers .main-inner { padding: 16px 20px; }
+
+    .learnova-siteadmin .tab-content,
+    .learnova-siteadmin .lsa-bookmarks {
+        display: none !important;
+    }
+}
+
+.learnova-siteadmin {
+    .lsa-viewer {
+        display: flex;
+        flex-direction: column;
+        height: calc(100vh - var(--learnova-nav-height) - 32px);
+        min-height: 420px;
+        background: #fff;
+        border: 1px solid var(--learnova-border-solid);
+        border-radius: 14px;
+        overflow: hidden;
+
+        &[hidden] { display: none; }
+    }
+
+    .lsa-viewer__bar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-shrink: 0;
+        padding: 10px 14px;
+        border-bottom: 1px solid var(--learnova-border-solid);
+    }
+
+    .lsa-viewer__back,
+    .lsa-viewer__btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        width: 34px;
+        height: 34px;
+        padding: 0;
+        border: 1px solid var(--learnova-border-solid);
+        border-radius: 10px;
+        background: #fff;
+        color: var(--learnova-iron);
+        text-decoration: none;
+        transition: background 0.12s ease, color 0.12s ease;
+
+        &:hover,
+        &:focus-visible {
+            background: var(--learnova-mist);
+            color: var(--learnova-teal-deep);
+            text-decoration: none;
+        }
+    }
+
+    // FontAwesome glyphs, as for the card icons — Boost already loads the font.
+    .lsa-viewer__back-ico::before,
+    .lsa-viewer__ico::before {
+        font-family: var(--fa-style-family, "Font Awesome 6 Free");
+        font-weight: 900;
+        font-size: 13px;
+        line-height: 1;
+    }
+    .lsa-viewer__back-ico::before     { content: "\f060"; } // arrow-left
+    .lsa-viewer__ico--reload::before  { content: "\f2f9"; } // rotate-right
+    .lsa-viewer__ico--newtab::before  { content: "\f35d"; } // up-right-from-square
+
+    .lsa-viewer__crumbs {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex: 1 1 auto;
+        min-width: 0;
+        font-size: 14px;
+    }
+
+    .lsa-viewer__crumb {
+        flex-shrink: 0;
+        padding: 0;
+        border: 0;
+        background: none;
+        font-weight: 600;
+        color: var(--learnova-stone);
+
+        &:hover,
+        &:focus-visible { color: var(--learnova-teal-deep); text-decoration: underline; }
+        &:empty { display: none; }
+        &:empty + .lsa-viewer__sep { display: none; }
+    }
+
+    .lsa-viewer__sep { color: var(--learnova-border-solid); }
+
+    .lsa-viewer__title {
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        font-weight: 700;
+        color: var(--learnova-dark);
+    }
+
+    .lsa-viewer__actions {
+        display: flex;
+        gap: 6px;
+        flex-shrink: 0;
+    }
+
+    .lsa-viewer__body {
+        position: relative;
+        flex: 1 1 auto;
+        min-height: 0;
+    }
+
+    .lsa-viewer__frame {
+        display: block;
+        width: 100%;
+        height: 100%;
+        border: 0;
+        background: #fff;
+        transition: opacity 0.15s ease;
+    }
+
+    // Thin indeterminate bar across the top while the panel loads.
+    .lsa-viewer__progress {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1;
+        height: 3px;
+        overflow: hidden;
+        opacity: 0;
+        transition: opacity 0.15s ease;
+
+        &::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 40%;
+            background: var(--learnova-teal);
+            animation: lsa-progress 1s ease-in-out infinite;
+        }
+    }
+
+    .lsa-viewer.is-loading {
+        .lsa-viewer__progress { opacity: 1; }
+        .lsa-viewer__frame { opacity: 0.55; }
+    }
+
+    @media (max-width: 991.98px) {
+        .lsa-viewer { height: calc(100vh - var(--learnova-nav-height) - 24px); }
+    }
+}
+
+@keyframes lsa-progress {
+    from { left: -40%; }
+    to   { left: 100%; }
+}
+
+// ── Page rendered inside the viewer (layout/drawers.php, lsaembed branch) ────
+// Builds on the shared body.learnova-page-embed shell; what differs here is
+// that the frame is viewport-sized and scrolls itself (no auto-height), the
+// page sits on white with its own padding, and admin pages keep their tertiary
+// navigation (e.g. report builder / user pages' action selectors), which the
+// course panels hide because their sub-tabs replace it.
+body.learnova-sa-embed {
+    background: #fff;
+
+    .embedded-main {
+        padding: 20px 24px 32px;
+    }
+
+    #tertiary-navigation,
+    .tertiary-navigation {
+        display: block !important;
+    }
+}

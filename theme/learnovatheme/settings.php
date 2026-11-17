@@ -209,6 +209,21 @@ if ($ADMIN->fulltree) {
         PARAM_URL
     ));
 
+    // ── Login page ─────────────────────────────────────────────────────
+    $settings->add(new admin_setting_heading(
+        'theme_learnovatheme/login_heading',
+        get_string('settings_login_heading', 'theme_learnovatheme'),
+        get_string('settings_login_heading_desc', 'theme_learnovatheme')
+    ));
+
+    $settings->add(new admin_setting_configtext(
+        'theme_learnovatheme/login_guideurl',
+        get_string('settings_login_guideurl', 'theme_learnovatheme'),
+        get_string('settings_login_guideurl_desc', 'theme_learnovatheme'),
+        '',
+        PARAM_URL
+    ));
+
     // ── Browse by Category ─────────────────────────────────────────────
     // Front-page section built from native course categories. Admin toggles
     // the section, edits the heading copy, then fills the slots below: each

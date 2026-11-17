@@ -29,7 +29,7 @@ $THEME->scss = function ($theme) {
     // Brand variables are NOT set here; they live in scss/pre.scss, which the
     // prescsscallback below injects before Bootstrap compiles.
     $scssdir = $CFG->dirroot . '/theme/learnovatheme/scss/';
-    foreach (['post.scss', '_management_ui.scss', '_site_admin.scss'] as $file) {
+    foreach (['post.scss', '_management_ui.scss', '_site_admin.scss', '_login.scss'] as $file) {
         if (file_exists($scssdir . $file)) {
             $scss .= "\n" . file_get_contents($scssdir . $file);
         }

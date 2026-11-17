@@ -947,8 +947,22 @@ define([
             }
 
             // Pencil / "Edit settings" → open the real form in the sliding panel.
+            // In edit mode the activity name is also an edit trigger; a click on
+            // the empty part of its row counts too (but not on the drag handle,
+            // checkbox, or the pencil/menu controls).
             var editBtn = e.target.closest('[data-cl-action="edit"]');
+            if (!editBtn) {
+                var actRow = e.target.closest('.learnova-cl__act[data-cl-cmid]');
+                if (actRow && !e.target.closest('[data-cl-edstop], input, button, a, .learnova-cl__menu')) {
+                    editBtn = actRow.querySelector('.learnova-cl__act-name[data-cl-action="edit"]');
+                }
+            }
             if (editBtn) {
+                // Modified clicks on the name link keep their native behaviour
+                // (open the activity in a new tab/window).
+                if (editBtn.tagName === 'A' && (e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey)) {
+                    return;
+                }
                 e.preventDefault();
                 openEditPanel(editBtn.getAttribute('data-cl-edit-url'), editBtn.getAttribute('data-cl-title'), editBtn.getAttribute('data-cl-badge'));
                 return;

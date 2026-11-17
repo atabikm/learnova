@@ -1,0 +1,118 @@
+{{!
+    @template theme_learnovatheme/login
+
+    Learnova login page shell (layout/login.php). Left: brand panel with photo,
+    headline, stats and testimonial. Right: help link, the page's main content
+    (core/loginform on /login/index.php), and a slim footer.
+
+    Example context (json):
+    {
+        "output": {"doctype": "<!DOCTYPE html>", "page_title": "Login", "main_content": "<p>form</p>"},
+        "wwwroot": "http://localhost:8080",
+        "bgimage": "https://example.com/bg.jpg",
+        "hasstats": true,
+        "stats": [{"num": "200+", "lbl": "Modul Tersedia"}],
+        "supporturl": "#",
+        "privacyurl": "#",
+        "guideurl": "#",
+        "year": "2026"
+    }
+}}
+{{> theme_boost/head }}
+
+<body {{{ bodyattributes }}}>
+{{> core/local/toast/wrapper}}
+
+<div id="page-wrapper">
+
+    {{{ output.standard_top_of_body_html }}}
+
+    <div id="page" class="lnv-login">
+
+        {{! ── Left: brand panel ── }}
+        <aside class="lnv-login-hero" style="--lnv-login-bg: url('{{{ bgimage }}}');">
+            <span class="lnv-login-hero__deco lnv-login-hero__deco--1" aria-hidden="true"></span>
+            <span class="lnv-login-hero__deco lnv-login-hero__deco--2" aria-hidden="true"></span>
+
+            <a href="{{{ wwwroot }}}" class="lnv-login-hero__logo">
+                <img src="{{{ wwwroot }}}/theme/learnovatheme/pix/learnova-logo-white.svg" alt="{{ sitename }}" height="34">
+            </a>
+
+            <div class="lnv-login-hero__body">
+                <span class="lnv-login-hero__badge">{{#str}} login_hero_badge, theme_learnovatheme {{/str}}</span>
+                <h2 class="lnv-login-hero__title">
+                    {{#str}} login_hero_title, theme_learnovatheme {{/str}}
+                    <span>{{#str}} login_hero_title_accent, theme_learnovatheme {{/str}}</span>
+                </h2>
+                <p class="lnv-login-hero__lead">{{#str}} login_hero_lead, theme_learnovatheme {{/str}}</p>
+
+                {{#hasstats}}
+                <dl class="lnv-login-stats">
+                    {{#stats}}
+                    <div class="lnv-login-stats__item">
+                        <dt>{{ num }}</dt>
+                        <dd>{{ lbl }}</dd>
+                    </div>
+                    {{/stats}}
+                </dl>
+                {{/hasstats}}
+            </div>
+
+            <figure class="lnv-login-quote">
+                <blockquote>{{#str}} login_quote_text, theme_learnovatheme {{/str}}</blockquote>
+                <figcaption>
+                    {{#quoteavatar}}
+                    <img src="{{{ quoteavatar }}}" alt="{{#str}} login_quote_name, theme_learnovatheme {{/str}}" class="lnv-login-quote__avatar-img" width="40" height="40">
+                    {{/quoteavatar}}
+                    {{^quoteavatar}}
+                    <span class="lnv-login-quote__avatar" aria-hidden="true">{{#str}} login_quote_initials, theme_learnovatheme {{/str}}</span>
+                    {{/quoteavatar}}
+                    <span>
+                        <strong>{{#str}} login_quote_name, theme_learnovatheme {{/str}}</strong>
+                        <small>{{#str}} login_quote_role, theme_learnovatheme {{/str}}</small>
+                    </span>
+                </figcaption>
+            </figure>
+        </aside>
+
+        {{! ── Right: form panel ── }}
+        <main class="lnv-login-panel">
+            <div class="lnv-login-panel__top">
+                <a href="{{{ wwwroot }}}" class="lnv-login-panel__mobilelogo">
+                    <img src="{{{ wwwroot }}}/theme/learnovatheme/pix/learnova-logo.svg" alt="{{ sitename }}" height="24">
+                </a>
+                <span class="lnv-login-panel__help">
+                    {{#str}} login_needhelp, theme_learnovatheme {{/str}}
+                    <a href="{{{ supporturl }}}">{{#str}} login_contactadmin, theme_learnovatheme {{/str}}</a>
+                </span>
+            </div>
+
+            <div class="lnv-login-panel__content" id="region-main">
+                {{{ output.course_content_header }}}
+                {{{ output.main_content }}}
+                {{{ output.course_content_footer }}}
+            </div>
+
+            <footer class="lnv-login-panel__footer">
+                <img src="{{{ wwwroot }}}/theme/learnovatheme/pix/learnova-logo.svg" alt="" height="20" aria-hidden="true">
+                <nav class="lnv-login-panel__links">
+                    <a href="{{{ privacyurl }}}">{{#str}} login_privacy, theme_learnovatheme {{/str}}</a>
+                    {{#guideurl}}<a href="{{{ guideurl }}}">{{#str}} login_guide, theme_learnovatheme {{/str}}</a>{{/guideurl}}
+                </nav>
+                <span class="lnv-login-panel__copy">&copy; {{ year }} Learnova</span>
+            </footer>
+        </main>
+    </div>
+
+    <div class="d-none">{{{ output.standard_footer_html }}}</div>
+    {{{ output.standard_end_of_body_html }}}
+</div>
+
+</body>
+</html>
+{{#js}}
+M.util.js_pending('theme_boost/loader');
+require(['theme_boost/loader'], function() {
+  M.util.js_complete('theme_boost/loader');
+});
+{{/js}}

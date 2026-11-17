@@ -1,0 +1,213 @@
+{{!
+    @template core/loginform
+
+    Learnova override of the core login form (right panel of the login layout).
+    Keeps every core hook: error/info/maintenance alerts, logintoken, anchor,
+    reCAPTCHA, identity providers (OAuth2 → "Masuk dengan Google Workspace"),
+    signup, guest login, instructions, autofocus and submit-lock JS.
+
+    Example context (json):
+    {
+        "autofocusform": false,
+        "canloginasguest": false,
+        "canloginbyemail": true,
+        "cansignup": false,
+        "showloginform": true,
+        "error": "",
+        "info": "",
+        "forgotpasswordurl": "#",
+        "hasidentityproviders": true,
+        "identityproviders": [{"name": "Google", "url": "#", "iconurl": ""}],
+        "hasinstructions": false,
+        "loginurl": "#",
+        "signupurl": "#",
+        "logintoken": "randomstring",
+        "username": "",
+        "maintenance": ""
+    }
+}}
+<div class="loginform lnv-loginform">
+    <p class="lnv-loginform__eyebrow">{{#str}} login_eyebrow, theme_learnovatheme {{/str}}</p>
+    <h1 class="lnv-loginform__title">{{#str}} login_title, theme_learnovatheme {{/str}}</h1>
+    <p class="lnv-loginform__sub">{{#str}} login_subtitle, theme_learnovatheme {{/str}}</p>
+
+    {{#maintenance}}
+        <div class="alert alert-danger login-maintenance">{{{maintenance}}}</div>
+    {{/maintenance}}
+    {{#error}}
+        <div class="alert alert-danger lnv-loginform__alert" id="loginerrormessage" role="alert">
+            {{#errortitle}}<strong class="d-block">{{errortitle}}</strong>{{/errortitle}}
+            {{error}}
+        </div>
+    {{/error}}
+    {{#info}}
+        <div class="alert alert-info lnv-loginform__alert" id="logininfomessage" role="status">{{info}}</div>
+    {{/info}}
+
+    {{#hasidentityproviders}}
+        <div class="lnv-loginform__idps">
+            {{#identityproviders}}
+                <a class="lnv-loginform__idp" href="{{url}}">
+                    {{#iconurl}}<img src="{{iconurl}}" alt="" width="20" height="20">{{/iconurl}}
+                    {{^iconurl}}<img src="{{config.wwwroot}}/theme/learnovatheme/pix/icons/google.svg" alt="" width="20" height="20">{{/iconurl}}
+                    <span>{{#str}} login_with, theme_learnovatheme, {{name}} {{/str}}</span>
+                </a>
+            {{/identityproviders}}
+        </div>
+        {{#showloginform}}
+            <div class="lnv-loginform__divider"><span>{{#str}} login_divider, theme_learnovatheme {{/str}}</span></div>
+        {{/showloginform}}
+    {{/hasidentityproviders}}
+    {{^hasidentityproviders}}
+        <div class="lnv-loginform__idps">
+            <a class="lnv-loginform__idp" href="{{config.wwwroot}}/auth/oauth2/login.php?id=1">
+                <img src="{{config.wwwroot}}/theme/learnovatheme/pix/icons/google.svg" alt="" width="20" height="20">
+                <span>{{#str}} login_with_google, theme_learnovatheme {{/str}}</span>
+            </a>
+        </div>
+        {{#showloginform}}
+            <div class="lnv-loginform__divider"><span>{{#str}} login_divider, theme_learnovatheme {{/str}}</span></div>
+        {{/showloginform}}
+    {{/hasidentityproviders}}
+
+    {{#showloginform}}
+        <form class="login-form lnv-loginform__form" action="{{loginurl}}" method="post" id="login">
+            <input id="anchor" type="hidden" name="anchor" value="">
+            <script>document.getElementById('anchor').value = location.hash;</script>
+            <input type="hidden" name="logintoken" value="{{logintoken}}">
+
+            <div class="lnv-loginform__field">
+                <label for="username">
+                    {{#canloginbyemail}}{{#str}} login_email, theme_learnovatheme {{/str}}{{/canloginbyemail}}
+                    {{^canloginbyemail}}{{#str}} username {{/str}}{{/canloginbyemail}}
+                </label>
+                <div class="lnv-loginform__input">
+                    <span class="lnv-loginform__icon lnv-loginform__icon--envelope" aria-hidden="true"></span>
+                    <input type="text" name="username" id="username" value="{{username}}"
+                           placeholder="{{#canloginbyemail}}{{#cleanstr}} login_email_placeholder, theme_learnovatheme {{/cleanstr}}{{/canloginbyemail}}{{^canloginbyemail}}{{#cleanstr}}username{{/cleanstr}}{{/canloginbyemail}}"
+                           autocomplete="username" required>
+                </div>
+            </div>
+
+            <div class="lnv-loginform__field">
+                <label for="password">{{#str}} login_password, theme_learnovatheme {{/str}}</label>
+                <div class="lnv-loginform__input">
+                    <span class="lnv-loginform__icon lnv-loginform__icon--lock" aria-hidden="true"></span>
+                    <input type="password" name="password" id="password" value=""
+                           placeholder="••••••••" autocomplete="current-password" required>
+                    <button type="button" class="lnv-loginform__reveal" data-action="lnv-toggle-password"
+                            aria-controls="password" aria-pressed="false"
+                            aria-label="{{#cleanstr}} login_showpassword, theme_learnovatheme {{/cleanstr}}">
+                        <span class="lnv-loginform__icon lnv-loginform__icon--eye" aria-hidden="true"></span>
+                    </button>
+                </div>
+            </div>
+
+            {{#recaptcha}}
+                <div class="login-form-recaptcha mb-3">{{{recaptcha}}}</div>
+            {{/recaptcha}}
+
+            <div class="lnv-loginform__meta">
+                <label class="lnv-loginform__remember">
+                    <input type="checkbox" name="rememberusername" value="1" {{#username}}checked{{/username}}>
+                    <span>{{#str}} login_remember, theme_learnovatheme {{/str}}</span>
+                </label>
+                <a href="{{forgotpasswordurl}}">{{#str}} login_forgot, theme_learnovatheme {{/str}}</a>
+            </div>
+
+            <button class="lnv-loginform__submit" type="submit" id="loginbtn">
+                <span>{{#str}} login_submit, theme_learnovatheme {{/str}}</span>
+                <span class="lnv-loginform__icon lnv-loginform__icon--arrow" aria-hidden="true"></span>
+            </button>
+        </form>
+    {{/showloginform}}
+
+    {{#cansignup}}
+        <p class="lnv-loginform__foot">
+            {{#str}} login_noaccount, theme_learnovatheme {{/str}}
+            <a href="{{signupurl}}">{{#str}} startsignup {{/str}}</a>
+        </p>
+    {{/cansignup}}
+    {{^cansignup}}
+        <p class="lnv-loginform__foot">
+            {{#str}} login_noaccount, theme_learnovatheme {{/str}}
+            <a href="{{config.wwwroot}}/user/contactsitesupport.php">{{#str}} login_contacthr, theme_learnovatheme {{/str}}</a>
+            {{#str}} login_noaccount_suffix, theme_learnovatheme {{/str}}
+        </p>
+    {{/cansignup}}
+
+    {{#canloginasguest}}
+        <form action="{{loginurl}}" method="post" id="guestlogin" class="lnv-loginform__guest">
+            <input type="hidden" name="logintoken" value="{{logintoken}}">
+            <input type="hidden" name="username" value="guest" />
+            <input type="hidden" name="password" value="guest" />
+            <button class="btn btn-link" type="submit" id="loginguestbtn">{{#str}}loginguest{{/str}}</button>
+        </form>
+    {{/canloginasguest}}
+
+    {{#languagemenu}}
+        <div class="login-languagemenu lnv-loginform__lang">{{>core/action_menu}}</div>
+    {{/languagemenu}}
+</div>
+
+{{#js}}
+    {{^error}}
+        {{#autofocusform}}
+            require(['core_form/events'], function(FormEvent) {
+                function autoFocus() {
+                    const userNameField = document.getElementById('username');
+                    const passwordField = document.getElementById('password');
+                    if (userNameField && userNameField.value.length == 0) {
+                        userNameField.focus();
+                    } else if (passwordField) {
+                        passwordField.focus();
+                    }
+                }
+                autoFocus();
+                window.addEventListener(FormEvent.eventTypes.fieldStructureChanged, autoFocus);
+            });
+        {{/autofocusform}}
+    {{/error}}
+    require(['core/pending'], function(Pending) {
+        const errorMessageDiv = document.getElementById('loginerrormessage');
+        const infoMessageDiv = document.getElementById('logininfomessage');
+        const errorMessage = errorMessageDiv?.textContent.trim();
+        const infoMessage = infoMessageDiv?.textContent.trim();
+        if (errorMessage || infoMessage) {
+            const pendingJS = new Pending('login-move-focus');
+            const usernameField = document.getElementById('username');
+            setTimeout(function() {
+                if (errorMessage && usernameField) {
+                    usernameField.focus();
+                }
+                if (errorMessage) {
+                    errorMessageDiv.innerHTML += "&nbsp;";
+                }
+                if (infoMessage) {
+                    infoMessageDiv.innerHTML += "&nbsp;";
+                }
+                pendingJS.resolve();
+            }, 500);
+        }
+    });
+    (function() {
+        const btn = document.querySelector('[data-action="lnv-toggle-password"]');
+        const input = document.getElementById('password');
+        if (!btn || !input) {
+            return;
+        }
+        btn.addEventListener('click', function() {
+            const show = input.type === 'password';
+            input.type = show ? 'text' : 'password';
+            btn.setAttribute('aria-pressed', show ? 'true' : 'false');
+            btn.classList.toggle('is-revealed', show);
+            input.focus();
+        });
+    })();
+    require(['core_form/submit'], function(Submit) {
+        Submit.init("loginbtn");
+        {{#canloginasguest}}
+            Submit.init("loginguestbtn");
+        {{/canloginasguest}}
+    });
+{{/js}}

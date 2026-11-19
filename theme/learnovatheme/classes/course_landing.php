@@ -27,6 +27,11 @@ use local_learnova_course\discussion_manager;
 class course_landing {
 
     /**
+     * Non-learning / communication modules excluded from course activity structure & completion.
+     */
+    public const EXCLUDED_MODS = ['forum', 'chat', 'label', 'subsection'];
+
+    /**
      * Build the full template context for the course landing page.
      *
      * @return array
@@ -57,9 +62,13 @@ class course_landing {
         // Progress percentage (real completion). Null when not trackable.
         $percent = null;
         if ($isloggedin) {
-            $raw = progress::get_course_progress_percentage($course, $USER->id);
-            if ($raw !== null) {
-                $percent = (int) round($raw);
+            if ($totalacts > 0) {
+                $percent = (int) round(($doneacts / $totalacts) * 100);
+            } else {
+                $raw = progress::get_course_progress_percentage($course, $USER->id);
+                if ($raw !== null) {
+                    $percent = (int) round($raw);
+                }
             }
         }
 
@@ -208,10 +217,10 @@ class course_landing {
         // Category → primary pill (real).
         $cat = core_course_category::get($course->category, IGNORE_MISSING, true);
         if ($cat) {
-            $hero['hero_category'] = format_string($cat->get_formatted_name());
+            $hero['hero_category'] = html_entity_decode($cat->get_formatted_name(), ENT_QUOTES, 'UTF-8');
         }
 
-        $hero['hero_title'] = format_string($course->fullname);
+        $hero['hero_title'] = html_entity_decode(format_string($course->fullname), ENT_QUOTES, 'UTF-8');
 
         // Summary → sub line (real; plain text, styling is CSS-only).
         $summary = '';
@@ -348,9 +357,86 @@ class course_landing {
      * @return array{modules: array, total: int, done: int, continue: ?array}
      */
     private static function build_structure($course, bool $isloggedin, bool $editing = false): array {
+        global $USER, $DB;
+
         $modinfo    = get_fast_modinfo($course);
         $completion = new completion_info($course);
         $marker     = (int) ($course->marker ?? 0);
+
+        $userid = ($isloggedin && !empty($USER->id)) ? (int) $USER->id : 0;
+        $userprogress = [
+            'quizzes' => [],
+            'assigns' => [],
+            'h5p'     => [],
+            'scorm'   => [],
+            'views'   => [],
+        ];
+
+        if ($userid > 0) {
+            // Finished quiz attempts.
+            $quizzes = $DB->get_records_sql("
+                SELECT DISTINCT q.id
+                FROM {quiz_attempts} qa
+                JOIN {quiz} q ON q.id = qa.quiz
+                WHERE qa.userid = :userid AND q.course = :courseid AND qa.state = 'finished'
+            ", ['userid' => $userid, 'courseid' => $course->id]);
+            foreach ($quizzes as $q) {
+                $userprogress['quizzes'][$q->id] = true;
+            }
+
+            // Submitted assignment attempts.
+            $assigns = $DB->get_records_sql("
+                SELECT DISTINCT a.id
+                FROM {assign_submission} s
+                JOIN {assign} a ON a.id = s.assignment
+                WHERE s.userid = :userid AND a.course = :courseid AND s.status = 'submitted'
+            ", ['userid' => $userid, 'courseid' => $course->id]);
+            foreach ($assigns as $a) {
+                $userprogress['assigns'][$a->id] = true;
+            }
+
+            // Finished H5P activities.
+            $h5ps = $DB->get_records_sql("
+                SELECT DISTINCT h.id
+                FROM {h5pactivity_attempts} ha
+                JOIN {h5pactivity} h ON h.id = ha.h5pactivityid
+                WHERE ha.userid = :userid AND h.course = :courseid AND ha.completion = 1
+            ", ['userid' => $userid, 'courseid' => $course->id]);
+            foreach ($h5ps as $h) {
+                $userprogress['h5p'][$h->id] = true;
+            }
+
+            // Completed SCORM.
+            try {
+                $scorms = $DB->get_records_sql("
+                    SELECT DISTINCT sa.scormid as id
+                    FROM {scorm_attempt} sa
+                    JOIN {scorm} s ON s.id = sa.scormid
+                    WHERE sa.userid = :userid AND s.course = :courseid
+                ", ['userid' => $userid, 'courseid' => $course->id]);
+                foreach ($scorms as $s) {
+                    $userprogress['scorm'][$s->id] = true;
+                }
+            } catch (\Throwable $e) {}
+
+            // Standard log views for reading content (pages, resources, books, urls, folders).
+            try {
+                $views = $DB->get_records_sql("
+                    SELECT id, contextid, contextinstanceid
+                    FROM {logstore_standard_log}
+                    WHERE userid = :userid AND courseid = :courseid
+                      AND contextlevel = :ctxlevel AND action = 'viewed'
+                ", [
+                    'userid'   => $userid,
+                    'courseid' => $course->id,
+                    'ctxlevel' => CONTEXT_MODULE,
+                ]);
+                foreach ($views as $v) {
+                    $userprogress['views'][$v->contextinstanceid] = true;
+                    $userprogress['views'][$v->contextid] = true;
+                }
+            } catch (\Throwable $e) {}
+        }
 
         $modules  = [];
         $total    = 0;
@@ -380,7 +466,7 @@ class course_landing {
                 // Subsection module → nested block (its activities live in the
                 // delegated section). Its activities still count toward totals.
                 if ($cm->modname === 'subsection') {
-                    $sub = self::build_subsection($cm, $modinfo, $completion, $isloggedin, $editing);
+                    $sub = self::build_subsection($cm, $modinfo, $completion, $isloggedin, $editing, $userprogress);
                     if ($sub !== null) {
                         $subsections[] = $sub;
                         $total += $sub['total'];
@@ -389,7 +475,7 @@ class course_landing {
                     continue;
                 }
 
-                $entry = self::build_activity_entry($cm, $completion, $isloggedin, $editing);
+                $entry = self::build_activity_entry($cm, $completion, $isloggedin, $editing, $userprogress);
                 if ($entry === null) {
                     continue;
                 }
@@ -404,12 +490,12 @@ class course_landing {
                 if ($continue === null && $entry['available'] && $cm->url && !$entry['done']) {
                     $entry['act']['current'] = true;
                     $continue = [
-                        'name'      => $cm->get_formatted_name(),
+                        'name'      => html_entity_decode($cm->get_formatted_name(), ENT_QUOTES, 'UTF-8'),
                         'url'       => self::activity_url($cm),
                         'icon_type' => $entry['act']['icon_type'],
                         'icon'      => $entry['act']['icon'],
                         'modname'   => get_string('pluginname', $cm->modname),
-                        'section'   => get_section_name($course, $section),
+                        'section'   => html_entity_decode(get_section_name($course, $section), ENT_QUOTES, 'UTF-8'),
                     ];
                 }
 
@@ -439,7 +525,7 @@ class course_landing {
 
             $module = [
                 'num'        => $modnum,
-                'name'       => get_section_name($course, $section),
+                'name'       => html_entity_decode(get_section_name($course, $section), ENT_QUOTES, 'UTF-8'),
                 'count'      => $count,
                 'donecount'  => $sectiondone,
                 'meta'       => get_string('cl_section_meta', 'theme_learnovatheme',
@@ -473,27 +559,65 @@ class course_landing {
      * @param bool              $editing
      * @return array{act: array, done: bool, tracked: bool, available: bool}|null
      */
-    private static function build_activity_entry($cm, $completion, bool $isloggedin, bool $editing): ?array {
+    private static function build_activity_entry($cm, $completion, bool $isloggedin, bool $editing, array $userprogress = []): ?array {
+        global $USER;
+
         if (!$cm->uservisible && empty($cm->availableinfo)) {
             return null;
         }
-        if ($cm->deletioninprogress || $cm->modname === 'label') {
+        if ($cm->deletioninprogress || in_array($cm->modname, self::EXCLUDED_MODS, true)) {
             return null;
         }
 
-        $tracked = $isloggedin && $completion->is_enabled($cm) != COMPLETION_TRACKING_NONE;
+        $tracked = $isloggedin;
         $iscomplete = false;
-        if ($tracked) {
+        if ($isloggedin && $completion->is_enabled($cm) != COMPLETION_TRACKING_NONE) {
             $data = $completion->get_data($cm, true);
             $iscomplete = in_array((int) $data->completionstate,
                 [COMPLETION_COMPLETE, COMPLETION_COMPLETE_PASS], true);
+        }
+
+        // If Moodle standard completion didn't flag it as done, check actual user progress.
+        if (!$iscomplete && $isloggedin && !empty($userprogress)) {
+            if ($cm->modname === 'quiz') {
+                if (isset($userprogress['quizzes'][$cm->instance])) {
+                    $iscomplete = true;
+                }
+            } else if ($cm->modname === 'assign') {
+                if (isset($userprogress['assigns'][$cm->instance])) {
+                    $iscomplete = true;
+                }
+            } else if ($cm->modname === 'h5pactivity') {
+                if (isset($userprogress['h5p'][$cm->instance])) {
+                    $iscomplete = true;
+                }
+            } else if ($cm->modname === 'scorm') {
+                if (isset($userprogress['scorm'][$cm->instance])) {
+                    $iscomplete = true;
+                }
+            } else if (in_array($cm->modname, ['page', 'resource', 'url', 'book', 'folder'])) {
+                $cmcontext = \context_module::instance($cm->id, IGNORE_MISSING);
+                if (isset($userprogress['views'][$cm->id]) || ($cmcontext && isset($userprogress['views'][$cmcontext->id]))) {
+                    $iscomplete = true;
+                }
+            }
+        }
+
+        // Keep Moodle manual completion in sync if enabled.
+        if ($isloggedin && $iscomplete && $completion->is_enabled($cm) == COMPLETION_TRACKING_MANUAL) {
+            try {
+                $data = $completion->get_data($cm, true);
+                if (!in_array((int) $data->completionstate, [COMPLETION_COMPLETE, COMPLETION_COMPLETE_PASS], true)) {
+                    $completion->update_state($cm, COMPLETION_COMPLETE, $USER->id);
+                }
+            } catch (\Throwable $e) {}
         }
 
         $available = (bool) $cm->available && $cm->uservisible;
         $icontype  = self::activity_icon_type($cm);
 
         $act = [
-            'name'       => $cm->get_formatted_name(),
+            'name'       => html_entity_decode($cm->get_formatted_name(), ENT_QUOTES, 'UTF-8'),
             'url'        => self::activity_url($cm),
             'hasurl'     => (bool) $cm->url,
             'icon_type'  => $icontype,
@@ -531,9 +655,10 @@ class course_landing {
      * @param \completion_info  $completion
      * @param bool              $isloggedin
      * @param bool              $editing
+     * @param array             $userprogress
      * @return array|null
      */
-    private static function build_subsection($cm, $modinfo, $completion, bool $isloggedin, bool $editing): ?array {
+    private static function build_subsection($cm, $modinfo, $completion, bool $isloggedin, bool $editing, array $userprogress = []): ?array {
         $deleg = $cm->get_delegated_section_info();
         if (!$deleg) {
             return null;
@@ -546,7 +671,7 @@ class course_landing {
             if ($scm->modname === 'subsection') {
                 continue; // No nesting beyond one level.
             }
-            $entry = self::build_activity_entry($scm, $completion, $isloggedin, $editing);
+            $entry = self::build_activity_entry($scm, $completion, $isloggedin, $editing, $userprogress);
             if ($entry === null) {
                 continue;
             }
@@ -561,7 +686,7 @@ class course_landing {
         }
 
         $sub = [
-            'name'       => $cm->get_formatted_name(),
+            'name'       => html_entity_decode($cm->get_formatted_name(), ENT_QUOTES, 'UTF-8'),
             'activities' => $acts,
             'total'      => count($acts),
             'donecount'  => $done,

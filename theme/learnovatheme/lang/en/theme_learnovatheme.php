@@ -84,8 +84,9 @@ $string['userstat_competency']         = 'Competency';
 $string['userstat_competency_met']     = 'Met';
 $string['userstat_due']                = 'Due';
 $string['userstat_hours']              = 'Hours';
-$string['hero_journey_label']      = 'Active Journey';
-$string['hero_journey_progress']   = 'Journey Progress';
+$string['hero_journey_label']        = 'Total Progres Belajar';
+$string['hero_journey_progress']     = 'Progres Keseluruhan';
+$string['hero_journey_all_courses']  = 'Semua Kursus ({$a->completed} dari {$a->total} Selesai)';
 $string['hero_card_label']         = 'Continue where you left off';
 $string['hero_card_continue']      = 'Continue';
 $string['hero_card_dashboard']     = 'Go to Dashboard';
@@ -465,34 +466,39 @@ $string['sa_viewer_frame']    = 'Site administration page';
 
 // ── Focus mode (distraction-free activity view) ──────────────────────────────
 // Topbar.
-$string['fm_back']            = 'Back to Course';
-$string['fm_back_title']      = 'Return to course overview';
-$string['fm_label_continuing'] = 'Continuing';
-$string['fm_label_completed']  = 'Completed';
-$string['fm_progress_label']  = '{$a->done} of {$a->total} activities';
-$string['fm_darkmode']        = 'Toggle dark mode';
-$string['fm_fullscreen']      = 'Toggle fullscreen';
-$string['fm_settings']        = 'Activity settings';
+$string['fm_back']            = 'Kembali ke Kursus';
+$string['fm_back_title']      = 'Kembali ke ringkasan kursus';
+$string['fm_label_continuing'] = 'Sedang Belajar';
+$string['fm_label_completed']  = 'Selesai';
+$string['fm_progress_label']  = '{$a->done} / {$a->total}';
+$string['fm_darkmode']        = 'Ganti mode gelap';
+$string['fm_fullscreen']      = 'Layar penuh';
+$string['fm_settings']        = 'Pengaturan aktivitas';
 // Sidebar (table of contents).
-$string['fm_toc_title']       = 'Course Content';
-$string['fm_toc_sub']         = '{$a->modules} modules · {$a->activities} activities';
-$string['fm_hide']            = 'Hide';
-$string['fm_hide_title']      = 'Hide Course Content';
-$string['fm_show']            = 'Show';
-$string['fm_show_title']      = 'Show Course Content';
-$string['fm_module_meta']     = '{$a->count} activities · {$a->status}';
-$string['fm_status_completed'] = 'Completed';
-$string['fm_status_progress'] = 'In progress';
-$string['fm_status_locked']   = 'Locked';
-$string['fm_status_open']     = 'Not started';
+$string['fm_toc_title']       = 'Daftar Aktivitas';
+$string['fm_toc_sub']         = '{$a->modules} modul · {$a->activities} aktivitas';
+$string['fm_hide']            = 'Tutup';
+$string['fm_hide_title']      = 'Tutup Daftar Aktivitas';
+$string['fm_show']            = 'Buka';
+$string['fm_show_title']      = 'Buka Daftar Aktivitas';
+$string['fm_module_meta']     = '{$a->count} aktivitas · {$a->status}';
+$string['fm_percent_completed'] = 'selesai';
+$string['fm_breadcrumb_sub']  = 'Aktivitas {$a->index} dari {$a->total}';
+$string['fm_status_completed'] = 'Selesai';
+$string['fm_status_progress'] = 'Dalam proses';
+$string['fm_status_locked']   = 'Terkunci';
+$string['fm_status_open']     = 'Belum dimulai';
 // Bottom navigation.
-$string['fm_prev']            = 'Previous';
-$string['fm_next']            = 'Next';
+$string['fm_prev']            = 'Sebelumnya';
+$string['fm_next']            = 'Selanjutnya';
+$string['fm_next_preview']    = 'Berikutnya';
+$string['fm_status_done']     = 'Sudah Selesai';
+$string['fm_status_not_done'] = 'Belum Selesai';
 // Activity intro strip.
-$string['fm_description']     = 'Description';
-$string['fm_discussion']      = 'Discussion';
-$string['fm_manage']          = 'Manage activity';
-$string['fm_manage_open']     = 'Open activity actions';
+$string['fm_description']     = 'Deskripsi';
+$string['fm_discussion']      = 'Diskusi';
+$string['fm_manage']          = 'Kelola aktivitas';
+$string['fm_manage_open']     = 'Buka menu aktivitas';
 
 // ── Focus mode: document-mode content (Page / Book / Assignment / Forum) ─────
 // Book.

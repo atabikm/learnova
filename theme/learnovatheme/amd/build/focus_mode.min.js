@@ -747,6 +747,93 @@ define(['core_user/repository', 'core/ajax', 'core/notification', 'core/str', 'c
                     btn.classList.toggle('active', !!document.fullscreenElement);
                 }
             });
+
+            /**
+             * Handle manual completion toggle event.
+             * Updates the sidebar checkmarks, module done badges, and course progress bar in real-time.
+             */
+            function handleCompletionToggled(e) {
+                var detail = e.detail;
+                if (!detail) {
+                    return;
+                }
+                var cmid = detail.cmid;
+                var completed = !!detail.completed;
+
+                // 1. Update activity item in sidebar.
+                var actItem = document.querySelector('.fm-activity[data-cmid="' + cmid + '"]');
+                if (actItem) {
+                    actItem.classList.toggle('done', completed);
+                    var actName = actItem.querySelector('.fm-act-name');
+                    if (actName) {
+                        actName.classList.toggle('done-name', completed);
+                    }
+                    var statusWrap = actItem.querySelector('.fm-act-status');
+                    if (statusWrap) {
+                        if (completed) {
+                            statusWrap.innerHTML = '<svg class="fm-act-check" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>';
+                        } else {
+                            if (actItem.classList.contains('current')) {
+                                statusWrap.innerHTML = '<span class="fm-act-dot"></span>';
+                            } else {
+                                statusWrap.innerHTML = '';
+                            }
+                        }
+                    }
+
+                    // Check if parent module is now all done.
+                    var moduleEl = actItem.closest('.fm-module');
+                    if (moduleEl) {
+                        var allActs = moduleEl.querySelectorAll('.fm-activity');
+                        var doneActs = moduleEl.querySelectorAll('.fm-activity.done');
+                        var modNum = moduleEl.querySelector('.fm-module-num');
+                        if (modNum) {
+                            var isModDone = (allActs.length > 0 && allActs.length === doneActs.length);
+                            modNum.classList.toggle('done', isModDone);
+                            if (isModDone) {
+                                modNum.innerHTML = '&#10003;';
+                            } else {
+                                var originalNum = modNum.getAttribute('data-num') || modNum.textContent.replace(/[^\d]/g, '');
+                                if (originalNum) {
+                                    modNum.textContent = originalNum;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // 2. Re-calculate total course progress.
+                var allTrackedActs = document.querySelectorAll('.fm-activity[data-cmid]');
+                if (allTrackedActs.length > 0) {
+                    var completedActs = document.querySelectorAll('.fm-activity[data-cmid].done');
+                    var percent = Math.round((completedActs.length / allTrackedActs.length) * 100);
+
+                    // Update progress fills.
+                    document.querySelectorAll('.fm-progress-fill, .fm-sb-prog-fill').forEach(function(el) {
+                        el.style.width = percent + '%';
+                    });
+
+                    // Update progress labels.
+                    var sbProgLabel = document.querySelector('.fm-sb-prog-label');
+                    if (sbProgLabel) {
+                        var baseLabel = sbProgLabel.getAttribute('data-label') || '';
+                        sbProgLabel.textContent = percent + '% ' + baseLabel;
+                    }
+                    var topProgText = document.querySelector('.fm-topbar-prog-text');
+                    if (topProgText) {
+                        topProgText.textContent = percent + '%';
+                    }
+                }
+
+                // 3. If withAvailability was set on the button, core reload may be needed.
+                if (detail.withAvailability && parseInt(detail.withAvailability, 10)) {
+                    window.location.reload();
+                }
+            }
+
+            // Listen for completion events if triggered.
+            document.addEventListener('core_course:manualcompletiontoggled', handleCompletionToggled);
+            document.addEventListener('manualCompletionToggled', handleCompletionToggled);
         }
     };
 });

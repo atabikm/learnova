@@ -31,6 +31,13 @@ use section_info;
 class focus_mode {
 
     /**
+     * Activity types excluded from focus mode (communication/social channels
+     * like announcements and discussion forums that do not belong to the sequential
+     * course learning curriculum).
+     */
+    public const EXCLUDED_MODS = ['forum', 'chat', 'label', 'subsection'];
+
+    /**
      * Whether the focus-mode chrome should replace the standard layout for the
      * current page. Only real activity *view* pages qualify, and only when the
      * teacher is not editing (so edit mode falls back to the normal layout).
@@ -49,6 +56,10 @@ class focus_mode {
         if ($page->user_is_editing()) {
             return false;
         }
+        // Exclude communication modules like announcements and discussion forums.
+        if (in_array($cm->modname, self::EXCLUDED_MODS, true)) {
+            return false;
+        }
         $pagetype = (string) $page->pagetype;
         if (in_array($pagetype, self::EXTRA_PAGETYPES, true)
                 || in_array($pagetype, focus_quiz::PAGETYPES, true)) {
@@ -59,13 +70,8 @@ class focus_mode {
 
     /**
      * Non-"view" activity pages that still belong inside the focus chrome.
-     *
-     * Reading a forum thread is a continuation of the activity, not a trip out
-     * of it, so the topbar, table of contents and prev/next stay put. The same
-     * holds for a quiz attempt and the two pages it hands over to — see
-     * {@see focus_quiz::PAGETYPES}.
      */
-    private const EXTRA_PAGETYPES = ['mod-forum-discuss'];
+    private const EXTRA_PAGETYPES = [];
 
     /**
      * Builds the full template context.
@@ -75,7 +81,7 @@ class focus_mode {
      * @return array
      */
     public static function context(moodle_page $page, renderer_base $output): array {
-        global $USER, $CFG;
+        global $USER, $CFG, $DB;
         require_once($CFG->dirroot . '/lib/completionlib.php');
 
         $course = $page->course;
@@ -86,12 +92,69 @@ class focus_mode {
         $completion = new completion_info($course);
         $completionon = $completion->is_enabled();
 
+        // Pre-fetch activity progress data across the course for this user.
+        $finishedquizzes = [];
+        $submittedassigns = [];
+        $finishedh5p = [];
+        $finishedscorm = [];
+        $viewedcontextids = [];
+
+        try {
+            // Finished quiz attempts.
+            $quizsql = "SELECT DISTINCT q.id FROM {quiz} q
+                          JOIN {quiz_attempts} qa ON qa.quiz = q.id
+                         WHERE q.course = ? AND qa.userid = ? AND qa.state = 'finished'";
+            $finishedquizzes = array_flip($DB->get_fieldset_sql($quizsql, [$course->id, $userid]));
+        } catch (\Throwable $e) {}
+
+        try {
+            // Submitted assignments.
+            $assignsql = "SELECT DISTINCT a.id FROM {assign} a
+                            JOIN {assign_submission} s ON s.assignment = a.id
+                           WHERE a.course = ? AND s.userid = ? AND s.status = 'submitted'";
+            $submittedassigns = array_flip($DB->get_fieldset_sql($assignsql, [$course->id, $userid]));
+        } catch (\Throwable $e) {}
+
+        try {
+            // H5P attempts.
+            $h5psql = "SELECT DISTINCT h.id FROM {h5pactivity} h
+                         JOIN {h5pactivity_attempts} ha ON ha.h5pactivityid = h.id
+                        WHERE h.course = ? AND ha.userid = ?";
+            $finishedh5p = array_flip($DB->get_fieldset_sql($h5psql, [$course->id, $userid]));
+        } catch (\Throwable $e) {}
+
+        try {
+            // SCORM completions.
+            $scormsql = "SELECT DISTINCT s.id FROM {scorm} s
+                           JOIN {scorm_scoes_track} st ON st.scormid = s.id
+                          WHERE s.course = ? AND st.userid = ?
+                            AND st.element IN ('cmi.core.lesson_status', 'cmi.completion_status')
+                            AND st.value IN ('completed', 'passed')";
+            $finishedscorm = array_flip($DB->get_fieldset_sql($scormsql, [$course->id, $userid]));
+        } catch (\Throwable $e) {}
+
+        try {
+            // Viewed context modules from logstore.
+            $viewedcontextids = array_flip($DB->get_fieldset_select(
+                'logstore_standard_log',
+                'DISTINCT contextid',
+                'courseid = ? AND userid = ? AND action = ? AND contextlevel = ?',
+                [$course->id, $userid, 'viewed', CONTEXT_MODULE]
+            ));
+        } catch (\Throwable $e) {}
+
         $flat = [];            // Ordered accessible cms for prev/next.
-        $totaltracked = 0;     // Activities with completion tracking.
-        $donetracked = 0;      // Completed of the above.
+        $totaltracked = 0;     // All activities in the course.
+        $donetracked = 0;      // Completed activities.
         $totallisted = 0;      // Every activity shown in the table of contents.
         $modules = [];         // Sidebar "modules" (course sections).
         $modnum = 0;           // Running visible-section index for the badge.
+
+        $currentsectionname = '';
+        $currentactindex = 1;
+        $currentsectionacttotal = 1;
+        $currentduration = '';
+        $iscurrentdone = false;
 
         foreach ($modinfo->get_section_info_all() as $section) {
             // Skip fully hidden sections that the user cannot see at all.
@@ -107,6 +170,9 @@ class focus_mode {
 
             foreach ($cmids as $cmid) {
                 $cm = $modinfo->cms[$cmid];
+                if (in_array($cm->modname, self::EXCLUDED_MODS, true)) {
+                    continue;
+                }
                 if (!$cm->has_view() || !empty($cm->deletioninprogress)) {
                     continue;
                 }
@@ -120,18 +186,65 @@ class focus_mode {
                 $islocked = !$cm->uservisible;
                 $isdone = false;
 
+                // 1. Check Moodle native completion if configured.
+                $details = null;
                 if ($completionon && $cm->uservisible) {
                     $details = cm_completion_details::get_instance($cm, $userid);
-                    if ($details->has_completion()) {
-                        $totaltracked++;
-                        $sectionhastracked = true;
-                        if ($details->is_overall_complete()) {
-                            $donetracked++;
+                    if ($details->has_completion() && $details->is_overall_complete()) {
+                        $isdone = true;
+                    }
+                }
+
+                // 2. Activity-specific completion rules.
+                if (!$isdone && $cm->uservisible) {
+                    if ($cm->modname === 'quiz') {
+                        // For quiz, only consider it done if the learner has actually completed an attempt.
+                        if (isset($finishedquizzes[$cm->instance])) {
                             $isdone = true;
-                        } else {
-                            $sectionalldone = false;
+                        }
+                    } else if ($cm->modname === 'assign') {
+                        // For assignments, complete if submitted.
+                        if (isset($submittedassigns[$cm->instance])) {
+                            $isdone = true;
+                        }
+                    } else if ($cm->modname === 'h5pactivity') {
+                        if (isset($finishedh5p[$cm->instance])) {
+                            $isdone = true;
+                        }
+                    } else if ($cm->modname === 'scorm') {
+                        if (isset($finishedscorm[$cm->instance])) {
+                            $isdone = true;
+                        }
+                    } else if (in_array($cm->modname, ['page', 'resource', 'url', 'book', 'folder'])) {
+                        // For reading and viewable content, viewing it counts as completion.
+                        $cmcontext = \context_module::instance($cm->id, IGNORE_MISSING);
+                        $hasviewlog = $cmcontext && isset($viewedcontextids[$cmcontext->id]);
+                        if ($iscurrent || $hasviewlog) {
+                            $isdone = true;
                         }
                     }
+                }
+
+                // Keep Moodle manual completion in sync for completed activities.
+                if ($completionon && $cm->uservisible && $isdone && $details && $details->has_completion() && $details->is_manual()) {
+                    if (!$details->is_overall_complete()) {
+                        try {
+                            $completion->update_state($cm, COMPLETION_COMPLETE, $userid);
+                        } catch (\Throwable $e) {}
+                    }
+                }
+
+                // Every activity in the course is treated as an activity.
+                $totaltracked++;
+                $sectionhastracked = true;
+                if ($isdone) {
+                    $donetracked++;
+                } else {
+                    $sectionalldone = false;
+                }
+
+                if ($iscurrent) {
+                    $iscurrentdone = $isdone;
                 }
 
                 if ($cm->uservisible && $cm->url) {
@@ -146,29 +259,44 @@ class focus_mode {
                 // from the availability API ("Not available unless: ...").
                 $restriction = self::restriction_text($cm->availableinfo, $course);
 
+                $secactindex = count($activities) + 1;
+                $duration = self::activity_duration($cm);
+
+                if ($iscurrent) {
+                    $sectionhascurrent = true;
+                    $currentsectionname = html_entity_decode(get_section_name($course, $section), ENT_QUOTES, 'UTF-8');
+                    $currentactindex = $secactindex;
+                    $currentduration = $duration;
+                }
+
                 $activities[] = [
-                    'name'           => $cm->get_formatted_name(),
+                    'id'             => (int) $cm->id,
+                    'cmid'           => (int) $cm->id,
+                    'name'           => self::clean_activity_name($cm),
                     'url'            => course_landing::activity_url($cm),
                     'hasurl'         => (bool) $cm->url,
                     'iconurl'        => course_landing::act_icon_url($icontype),
                     'icontype'       => $icontype,
                     'modname'        => $cm->modname,
                     'iscurrent'      => $iscurrent,
-                    'isdone'         => $isdone && !$iscurrent,
+                    'isdone'         => $isdone,
                     'islocked'       => $islocked,
                     'isavailable'    => !$islocked && !$isdone && !$iscurrent,
                     'restriction'    => $restriction,
                     'hasrestriction' => $restriction !== '',
+                    'duration'       => $duration,
+                    'hasduration'    => $duration !== '',
+                    'actindex'       => $secactindex,
                 ];
                 $totallisted++;
-
-                if ($iscurrent) {
-                    $sectionhascurrent = true;
-                }
             }
 
             if (empty($activities)) {
                 continue;
+            }
+
+            if ($sectionhascurrent) {
+                $currentsectionacttotal = count($activities);
             }
 
             $modnum++;
@@ -189,7 +317,7 @@ class focus_mode {
             $sectionrestriction = self::restriction_text($section->availableinfo, $course);
 
             $modules[] = [
-                'name'           => get_section_name($course, $section),
+                'name'           => html_entity_decode(get_section_name($course, $section), ENT_QUOTES, 'UTF-8'),
                 'num'            => $modnum,
                 'count'          => count($activities),
                 'meta'           => get_string('fm_module_meta', 'theme_learnovatheme', (object) [
@@ -204,6 +332,20 @@ class focus_mode {
                 'restriction'    => $sectionrestriction,
                 'hasrestriction' => $sectionrestriction !== '',
             ];
+        }
+
+        if (empty($currentsectionname)) {
+            $currentsectionname = html_entity_decode(format_string($course->fullname), ENT_QUOTES, 'UTF-8');
+            $currentactindex = 1;
+            $currentsectionacttotal = max(1, $totallisted);
+        }
+        $currentactivitysub = get_string('fm_breadcrumb_sub', 'theme_learnovatheme', (object) [
+            'index' => $currentactindex,
+            'total' => $currentsectionacttotal,
+        ]);
+        $useravatar = '';
+        if (isloggedin() && !isguestuser()) {
+            $useravatar = $output->user_picture($USER, ['size' => 32, 'link' => false]);
         }
 
         // Course-wide progress across tracked activities. The topbar shows the
@@ -233,18 +375,8 @@ class focus_mode {
             }
         }
 
-        // Manual completion button — reuse core's renderable + JS toggle.
-        $completionbutton = '';
-        if ($completionon && $currentcm->uservisible) {
-            $details = cm_completion_details::get_instance($currentcm, $userid);
-            if ($details->has_completion() && $details->is_manual() && $details->show_manual_completion()) {
-                $renderable = new \core_course\output\activity_completion($currentcm, $details, false);
-                $completionbutton = $output->render_from_template(
-                    'core_course/completion_manual',
-                    $renderable->export_for_template($output)
-                );
-            }
-        }
+        // Status indicator is read-only (learners cannot manually toggle mark done).
+        // Everything is tracked through real activity completion.
 
         $courseurl = new moodle_url('/course/view.php', ['id' => $course->id]);
 
@@ -286,9 +418,9 @@ class focus_mode {
         }
 
         return $content + focus_discussion::context($course, $currentcm) + [
-            'coursename'       => format_string($course->fullname),
+            'coursename'       => html_entity_decode(format_string($course->fullname), ENT_QUOTES, 'UTF-8'),
             'courseurl'        => $courseurl->out(false),
-            'currentname'      => $currentcm->get_formatted_name(),
+            'currentname'      => self::clean_activity_name($currentcm),
             'currenticonurl'   => course_landing::act_icon_url($currenticontype),
             'currenticontype'  => $currenticontype,
             'typelabel'        => course_landing::activity_type_label($currentcm),
@@ -318,15 +450,21 @@ class focus_mode {
             'hassettings'      => $cansettings,
             'settingsurl'      => $settingsurl,
 
-            'completionbutton' => $completionbutton,
-            'hascompletion'    => $completionbutton !== '',
+            'iscurrentdone'    => $iscurrentdone,
 
             'hasprev'          => $hasprev,
             'prevurl'          => $hasprev ? course_landing::activity_url($prev) : '',
-            'prevname'         => $hasprev ? $prev->get_formatted_name() : '',
+            'prevname'         => $hasprev ? self::clean_activity_name($prev) : '',
             'hasnext'          => $hasnext,
             'nexturl'          => $hasnext ? course_landing::activity_url($next) : '',
-            'nextname'         => $hasnext ? $next->get_formatted_name() : '',
+            'nextname'         => $hasnext ? self::clean_activity_name($next) : '',
+
+            'currentsectionname'     => $currentsectionname,
+            'currentactindex'        => $currentactindex,
+            'currentsectionacttotal' => $currentsectionacttotal,
+            'currentactivitysub'     => $currentactivitysub,
+            'currentduration'        => $currentduration,
+            'useravatar'             => $useravatar,
         ];
     }
 
@@ -444,5 +582,105 @@ class focus_mode {
         // in upper case, and the emphasised part here is the activity name.
         $text = html_entity_decode(strip_tags(info::format_info($availableinfo, $course)), ENT_QUOTES, 'UTF-8');
         return trim(preg_replace('/\s+/u', ' ', $text));
+    }
+
+    /**
+     * Estimated duration or type indicator for an activity.
+     *
+     * @param cm_info $cm
+     * @return string
+     */
+    /**
+     * Estimated duration or type indicator for an activity.
+     *
+     * How to edit/override duration:
+     * 1. ID Number (Activity Settings -> Common module settings -> ID number):
+     *    Set e.g. "10m", "15 min", "30 menit", "dur:20m".
+     * 2. Tag in activity name: e.g. "Modul 1 — Dasar Komunikasi [15m]"
+     *    The tag [15m] is automatically used as duration and stripped from title display.
+     * 3. Tag in activity description/intro: e.g. "[duration: 10m]" or "[10m]".
+     * 4. Quiz setting (Quiz Settings -> Timing -> Time limit): uses quiz time limit.
+     * 5. Page content: auto-calculated reading time (~180 words/min).
+     * 6. Default by module type.
+     *
+     * @param cm_info $cm
+     * @return string
+     */
+    public static function activity_duration(cm_info $cm): string {
+        global $DB;
+
+        // 1. Check ID number (Common module settings -> ID number).
+        if (!empty($cm->idnumber)) {
+            $idnum = trim($cm->idnumber);
+            if (preg_match('/(?:dur(?:ation)?[:=]\s*)?(\d+\s*(?:m|min|mins|menit|h|jam|hours?))/i', $idnum, $m)) {
+                return $m[1];
+            }
+        }
+
+        // 2. Check for duration tag in activity name: e.g. "Modul 1 [15 min]", "Video (10m)".
+        $rawname = (string) $cm->name;
+        if (preg_match('/[\[\(](\d+\s*(?:m|min|mins|menit|h|jam|hours?))[\]\)]/i', $rawname, $m)) {
+            return $m[1];
+        }
+
+        // 3. Check for duration tag in intro/description: e.g. "[duration: 15m]" or "(15 min)".
+        try {
+            $record = $DB->get_record($cm->modname, ['id' => $cm->instance], 'intro');
+            if ($record && !empty($record->intro)) {
+                if (preg_match('/[\[\(](?:dur(?:ation)?[:=]\s*)?(\d+\s*(?:m|min|mins|menit|h|jam|hours?))[\]\)]/i', $record->intro, $m)) {
+                    return $m[1];
+                }
+            }
+        } catch (\Throwable $e) {}
+
+        // 4. Activity-specific automatic calculations.
+        try {
+            if ($cm->modname === 'quiz') {
+                $quiz = $DB->get_record('quiz', ['id' => $cm->instance], 'timelimit');
+                if ($quiz && !empty($quiz->timelimit)) {
+                    $mins = (int) ceil($quiz->timelimit / 60);
+                    return $mins . 'm';
+                }
+                return '5m';
+            }
+            if ($cm->modname === 'page') {
+                $page = $DB->get_record('page', ['id' => $cm->instance], 'content');
+                if ($page && !empty($page->content)) {
+                    $words = str_word_count(strip_tags($page->content));
+                    $mins = max(1, (int) round($words / 180));
+                    return $mins . ' min';
+                }
+                return '5 min';
+            }
+            if ($cm->modname === 'book') {
+                return '10 min';
+            }
+            if ($cm->modname === 'scorm') {
+                return '15 min';
+            }
+            if ($cm->modname === 'resource') {
+                return 'PDF';
+            }
+            if ($cm->modname === 'assign') {
+                return 'Tugas';
+            }
+            if ($cm->modname === 'url') {
+                return 'Web';
+            }
+        } catch (\Throwable $e) {
+            return '';
+        }
+        return '';
+    }
+
+    /**
+     * Cleans duration tags like [15m] from the activity display name.
+     *
+     * @param cm_info $cm
+     * @return string
+     */
+    public static function clean_activity_name(cm_info $cm): string {
+        $name = html_entity_decode($cm->get_formatted_name(), ENT_QUOTES, 'UTF-8');
+        return trim(preg_replace('/\s*[\[\(]\d+\s*(?:m|min|mins|menit|h|jam|hours?)[\]\)]/i', '', $name));
     }
 }

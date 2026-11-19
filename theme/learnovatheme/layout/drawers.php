@@ -398,6 +398,8 @@ if ($PAGE->pagelayout === 'frontpage') {
             $greetkey = 'hero_greet_evening';
         }
 
+        $progressdata = \theme_learnovatheme\user_stats::overall_progress();
+
         $herocontext = [
             'isguest'         => false,
             'wwwroot'         => $CFG->wwwroot,
@@ -410,12 +412,14 @@ if ($PAGE->pagelayout === 'frontpage') {
             // 4 chips chosen in Home Setting, resolved against the learner's own
             // data (or manual overrides) by the user_stats catalogue.
             'stats' => \theme_learnovatheme\user_stats::selected(),
-            // PLACEHOLDER: the learning-journey feature is not built yet, so the
-            // tag and its progress bar stay hardcoded until it lands.
+
             'journey_label'   => get_string('hero_journey_label', 'theme_learnovatheme'),
-            'journey_name'    => 'E-Learning Content Lead Program',
+            'journey_name'    => get_string('hero_journey_all_courses', 'theme_learnovatheme', (object) [
+                'completed' => $progressdata['completed_courses'],
+                'total'     => $progressdata['total_courses'],
+            ]),
             'journey_progress_label' => get_string('hero_journey_progress', 'theme_learnovatheme'),
-            'journey_progress' => 62,
+            'journey_progress' => $progressdata['overall_progress'],
             'card_dashboard'  => get_string('hero_card_dashboard', 'theme_learnovatheme'),
             'dashboard_url'   => (new moodle_url('/my/'))->out(false),
         ] + \theme_learnovatheme\hero_continue::resolve();

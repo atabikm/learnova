@@ -32,7 +32,7 @@ class focus_document {
      * Activity types that read as documents: prose and forms rather than an
      * immersive player. Anything else keeps the plain full-width treatment.
      */
-    private const DOCUMENT_MODS = ['page', 'book', 'assign', 'forum'];
+    private const DOCUMENT_MODS = ['page', 'book', 'assign'];
 
     /**
      * Activity types that are a player rather than a page: the content fills the

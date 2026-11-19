@@ -27,42 +27,118 @@ class hero_continue {
      * }
      */
     public static function resolve(): array {
-        $card = self::from_recent_activity();
-        if ($card === null) {
-            $card = self::from_recent_course();
+        $actcandidate = self::get_recent_activity_candidate();
+        $coursecandidate = self::get_recent_course_candidate();
+
+        // When a user accessed a course more recently than any single module view,
+        // show that course's next resumable activity.
+        if ($coursecandidate !== null) {
+            if ($actcandidate === null || $coursecandidate['timeaccess'] > $actcandidate['timeaccess']) {
+                $card = self::build_course_card($coursecandidate['course']);
+                if ($card !== null) {
+                    return $card;
+                }
+            }
         }
-        if ($card === null) {
-            $card = self::empty_state();
+
+        if ($actcandidate !== null) {
+            return self::build_activity_card($actcandidate['course'], $actcandidate['cm'], $actcandidate['modinfo']);
         }
-        return $card;
+
+        if ($coursecandidate !== null) {
+            $card = self::build_course_card($coursecandidate['course']);
+            if ($card !== null) {
+                return $card;
+            }
+        }
+
+        return self::empty_state();
     }
 
     /**
-     * Card built from the last activity the user opened.
+     * Finds the most recent activity candidate from block_recentlyaccesseditems.
      *
-     * @return array|null  Null when nothing is tracked, or the activity is gone.
+     * @return array{timeaccess: int, course: \stdClass, cm: \cm_info, modinfo: \course_modinfo}|null
      */
-    private static function from_recent_activity(): ?array {
-        global $USER, $CFG;
+    private static function get_recent_activity_candidate(): ?array {
+        global $USER;
 
         if (!class_exists('\block_recentlyaccesseditems\helper')) {
             return null;
         }
 
-        // The helper already drops items the user can no longer see.
-        $items = \block_recentlyaccesseditems\helper::get_recent_items(1);
-        $item = reset($items);
-        if (empty($item)) {
+        $items = \block_recentlyaccesseditems\helper::get_recent_items(5);
+        foreach ($items as $item) {
+            try {
+                $modinfo = get_fast_modinfo($item->courseid);
+                $candidate = $modinfo->get_cm($item->cmid);
+                if (in_array($candidate->modname, course_landing::EXCLUDED_MODS, true)) {
+                    continue;
+                }
+                return [
+                    'timeaccess' => (int) $item->timeaccess,
+                    'course'     => $modinfo->get_course(),
+                    'cm'         => $candidate,
+                    'modinfo'    => $modinfo,
+                ];
+            } catch (\Throwable $e) {
+                continue;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Finds the most recent course candidate from user_lastaccess.
+     *
+     * @return array{timeaccess: int, course: \stdClass}|null
+     */
+    private static function get_recent_course_candidate(): ?array {
+        global $USER, $DB;
+
+        if (empty($USER->id) || isguestuser()) {
             return null;
         }
 
-        try {
-            $modinfo = get_fast_modinfo($item->courseid);
-            $cm = $modinfo->get_cm($item->cmid);
-            $course = $modinfo->get_course();
-        } catch (\Throwable $e) {
-            return null;
+        $records = $DB->get_records_select(
+            'user_lastaccess',
+            'userid = ? AND courseid > 1',
+            [$USER->id],
+            'timeaccess DESC',
+            'courseid, timeaccess',
+            0,
+            5
+        );
+
+        foreach ($records as $record) {
+            try {
+                $course = get_course($record->courseid);
+            } catch (\Throwable $e) {
+                continue;
+            }
+            if (!can_access_course($course, null, '', true)) {
+                continue;
+            }
+
+            return [
+                'timeaccess' => (int) $record->timeaccess,
+                'course'     => $course,
+            ];
         }
+
+        return null;
+    }
+
+    /**
+     * Card built from a specific activity.
+     *
+     * @param \stdClass $course
+     * @param \cm_info $cm
+     * @param \course_modinfo $modinfo
+     * @return array
+     */
+    private static function build_activity_card($course, $cm, $modinfo): array {
+        global $USER, $CFG;
 
         require_once($CFG->dirroot . '/course/lib.php');
 
@@ -70,7 +146,7 @@ class hero_continue {
         $parts = [];
         $section = $cm->get_section_info();
         if ($section) {
-            $sectionname = get_section_name($course, $section);
+            $sectionname = html_entity_decode(get_section_name($course, $section), ENT_QUOTES, 'UTF-8');
             if ($sectionname !== '') {
                 $parts[] = $sectionname;
             }
@@ -87,10 +163,13 @@ class hero_continue {
         $url = (new moodle_url('/course/view.php', ['id' => $course->id]))->out(false);
 
         $percent = \core_completion\progress::get_course_progress_percentage($course, $USER->id);
+        if ($percent === null) {
+            $percent = self::calculate_course_progress($course, (int) $USER->id);
+        }
 
         return [
             'card_label'      => get_string('hero_card_label', 'theme_learnovatheme'),
-            'card_course'     => format_string($course->fullname),
+            'card_course'     => html_entity_decode(format_string($course->fullname), ENT_QUOTES, 'UTF-8'),
             'card_meta'       => implode(' · ', $parts),
             'card_progress'   => $percent === null ? 0 : (int) round($percent),
             'card_hasprogress' => $percent !== null,
@@ -100,42 +179,150 @@ class hero_continue {
     }
 
     /**
-     * Card built from the last course the user visited — used when no single
-     * activity is tracked yet (e.g. the tracker was just enabled).
+     * Card built from a course: finds the first incomplete activity or last item.
      *
+     * @param \stdClass $course
      * @return array|null
      */
-    private static function from_recent_course(): ?array {
-        global $USER, $DB;
+    private static function build_course_card($course): ?array {
+        global $USER, $CFG;
 
-        $records = $DB->get_records('user_lastaccess', ['userid' => $USER->id], 'timeaccess DESC', 'courseid', 0, 5);
-        foreach ($records as $record) {
-            if ((int) $record->courseid === (int) SITEID) {
-                continue;
-            }
-            try {
-                $course = get_course($record->courseid);
-            } catch (\Throwable $e) {
-                continue;
-            }
-            if (!can_access_course($course, null, '', true)) {
-                continue;
-            }
+        require_once($CFG->dirroot . '/course/lib.php');
+        require_once($CFG->dirroot . '/lib/completionlib.php');
 
-            $percent = \core_completion\progress::get_course_progress_percentage($course, $USER->id);
+        $modinfo = get_fast_modinfo($course);
+        $completion = new \completion_info($course);
+        $excluded = course_landing::EXCLUDED_MODS;
 
-            return [
-                'card_label'      => get_string('hero_card_label', 'theme_learnovatheme'),
-                'card_course'     => format_string($course->fullname),
-                'card_meta'       => '',
-                'card_progress'   => $percent === null ? 0 : (int) round($percent),
-                'card_hasprogress' => $percent !== null,
-                'card_url'        => (new moodle_url('/course/view.php', ['id' => $course->id]))->out(false),
-                'card_continue'   => get_string('hero_card_continue', 'theme_learnovatheme'),
-            ];
+        // 1. Try finding the last touched activity specifically in THIS course.
+        $targetcm = null;
+        if (class_exists('\block_recentlyaccesseditems\helper')) {
+            $items = \block_recentlyaccesseditems\helper::get_recent_items(10);
+            foreach ($items as $it) {
+                if ((int) $it->courseid === (int) $course->id) {
+                    try {
+                        $candidate = $modinfo->get_cm($it->cmid);
+                        if (!in_array($candidate->modname, $excluded, true) && $candidate->visible) {
+                            $targetcm = $candidate;
+                            break;
+                        }
+                    } catch (\Throwable $e) {}
+                }
+            }
         }
 
-        return null;
+        // 2. If no recent item in this course, find the first incomplete activity.
+        if ($targetcm === null) {
+            foreach ($modinfo->get_cms() as $cm) {
+                if ($cm->deletioninprogress || in_array($cm->modname, $excluded, true) || !$cm->visible) {
+                    continue;
+                }
+                $isdone = false;
+                if ($completion->is_enabled($cm) != COMPLETION_TRACKING_NONE) {
+                    $data = $completion->get_data($cm, true, $USER->id);
+                    $isdone = in_array((int) $data->completionstate, [COMPLETION_COMPLETE, COMPLETION_COMPLETE_PASS], true);
+                }
+                if (!$isdone) {
+                    $targetcm = $cm;
+                    break;
+                }
+            }
+        }
+
+        // 3. Fallback: take the first or last available activity in this course.
+        if ($targetcm === null) {
+            foreach ($modinfo->get_cms() as $cm) {
+                if (!$cm->deletioninprogress && !in_array($cm->modname, $excluded, true) && $cm->visible) {
+                    $targetcm = $cm;
+                    break;
+                }
+            }
+        }
+
+        if ($targetcm !== null) {
+            return self::build_activity_card($course, $targetcm, $modinfo);
+        }
+
+        // Fallback when course has no learning activities.
+        $percent = \core_completion\progress::get_course_progress_percentage($course, $USER->id);
+        if ($percent === null) {
+            $percent = self::calculate_course_progress($course, (int) $USER->id);
+        }
+
+        return [
+            'card_label'      => get_string('hero_card_label', 'theme_learnovatheme'),
+            'card_course'     => html_entity_decode(format_string($course->fullname), ENT_QUOTES, 'UTF-8'),
+            'card_meta'       => '',
+            'card_progress'   => $percent === null ? 0 : (int) round($percent),
+            'card_hasprogress' => $percent !== null,
+            'card_url'        => (new moodle_url('/course/view.php', ['id' => $course->id]))->out(false),
+            'card_continue'   => get_string('hero_card_continue', 'theme_learnovatheme'),
+        ];
+    }
+
+    /**
+     * Fallback to calculate real progress of a course for unenrolled or admin users.
+     *
+     * @param \stdClass $course
+     * @param int $userid
+     * @return int|null
+     */
+    private static function calculate_course_progress($course, int $userid): ?int {
+        global $DB;
+        if ($userid <= 0) {
+            return null;
+        }
+
+        $quizzes = array_flip($DB->get_fieldset_sql("
+            SELECT DISTINCT q.id FROM {quiz_attempts} qa
+            JOIN {quiz} q ON q.id = qa.quiz
+            WHERE qa.userid = ? AND q.course = ? AND qa.state = 'finished'
+        ", [$userid, $course->id]));
+
+        $assigns = array_flip($DB->get_fieldset_sql("
+            SELECT DISTINCT a.id FROM {assign_submission} s
+            JOIN {assign} a ON a.id = s.assignment
+            WHERE s.userid = ? AND a.course = ? AND s.status = 'submitted'
+        ", [$userid, $course->id]));
+
+        $views = array_flip($DB->get_fieldset_sql("
+            SELECT DISTINCT contextinstanceid FROM {logstore_standard_log}
+            WHERE userid = ? AND courseid = ? AND contextlevel = ? AND action = 'viewed'
+        ", [$userid, $course->id, CONTEXT_MODULE]));
+
+        $modinfo = get_fast_modinfo($course);
+        require_once($GLOBALS['CFG']->dirroot . '/lib/completionlib.php');
+        $completion = new \completion_info($course);
+
+        $total = 0;
+        $done = 0;
+        $excluded = ['forum', 'chat', 'label', 'subsection'];
+
+        foreach ($modinfo->get_cms() as $cm) {
+            if ($cm->deletioninprogress || in_array($cm->modname, $excluded, true) || !$cm->visible) {
+                continue;
+            }
+            $total++;
+            $isdone = false;
+            if ($completion->is_enabled($cm) != COMPLETION_TRACKING_NONE) {
+                $data = $completion->get_data($cm, true, $userid);
+                $isdone = in_array((int) $data->completionstate, [COMPLETION_COMPLETE, COMPLETION_COMPLETE_PASS], true);
+            }
+            if (!$isdone) {
+                if ($cm->modname === 'quiz' && isset($quizzes[$cm->instance])) {
+                    $isdone = true;
+                } else if ($cm->modname === 'assign' && isset($assigns[$cm->instance])) {
+                    $isdone = true;
+                } else if (in_array($cm->modname, ['page', 'resource', 'url', 'book', 'folder']) && isset($views[$cm->id])) {
+                    $isdone = true;
+                }
+            }
+            if ($isdone) {
+                $done++;
+            }
+        }
+
+        return $total > 0 ? (int) round(($done / $total) * 100) : 0;
     }
 
     /**
@@ -174,7 +361,7 @@ class hero_continue {
         $total = 0;
         foreach ($sections[$cm->sectionnum] as $cmid) {
             $other = $modinfo->cms[$cmid];
-            if (!$other->uservisible || !$other->url) {
+            if (!$other->uservisible || !$other->url || in_array($other->modname, course_landing::EXCLUDED_MODS, true)) {
                 continue;
             }
             $total++;

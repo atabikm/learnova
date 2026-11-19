@@ -102,14 +102,8 @@ class user_stats {
                 return (string) self::course_tally()['completed'];
 
             case 'activities_done':
-                // Completed activities across every course the user touched.
-                $sql = "SELECT COUNT(cmc.id)
-                          FROM {course_modules_completion} cmc
-                          JOIN {course_modules} cm ON cm.id = cmc.coursemoduleid
-                         WHERE cmc.userid = :uid
-                           AND cmc.completionstate >= 1
-                           AND cm.deletioninprogress = 0";
-                return (string) $DB->count_records_sql($sql, ['uid' => $USER->id]);
+                $op = self::overall_progress($USER->id);
+                return (string) ($op['done_activities'] ?? 0);
 
             case 'badges':
                 return (string) $DB->count_records('badge_issued', ['userid' => $USER->id]);
@@ -142,46 +136,182 @@ class user_stats {
     /**
      * Enrolled courses split into "in progress" and "completed".
      *
-     * A course counts as completed when core marks it complete, or — for
-     * courses without a completion criteria set — when every completion-tracked
-     * activity is done (progress 100%). Computed once per request.
-     *
      * @return array{inprogress: int, completed: int}
      */
     private static function course_tally(): array {
+        global $USER;
+        $op = self::overall_progress($USER->id);
+        return [
+            'inprogress' => $op['inprogress_courses'],
+            'completed'  => $op['completed_courses'],
+        ];
+    }
+
+    /**
+     * Computes real overall progress across all learner courses.
+     *
+     * @param int|null $userid
+     * @return array{
+     *     total_courses: int,
+     *     completed_courses: int,
+     *     inprogress_courses: int,
+     *     total_activities: int,
+     *     done_activities: int,
+     *     overall_progress: int
+     * }
+     */
+    public static function overall_progress(?int $userid = null): array {
         global $USER, $DB;
-        // Keyed by user: several chips share this tally, and a CLI/test run may
-        // resolve stats for more than one user in the same process.
+        $uid = $userid ?? (int) $USER->id;
         static $cache = [];
 
-        if (isset($cache[$USER->id])) {
-            return $cache[$USER->id];
+        if (isset($cache[$uid])) {
+            return $cache[$uid];
         }
 
-        $tally = ['inprogress' => 0, 'completed' => 0];
+        $default = [
+            'total_courses'       => 0,
+            'completed_courses'   => 0,
+            'inprogress_courses'  => 0,
+            'total_activities'    => 0,
+            'done_activities'     => 0,
+            'overall_progress'    => 0,
+        ];
+
+        if ($uid <= 0) {
+            return $default;
+        }
+
+        // 1. Get courses: enrolled courses, or accessed courses if admin/no enrolment.
         $courses = enrol_get_my_courses('id');
+        if (empty($courses)) {
+            $courses = $DB->get_records_sql("
+                SELECT DISTINCT c.id, c.fullname, c.shortname
+                FROM {course} c
+                WHERE c.id > 1 AND c.visible = 1
+                  AND (
+                      EXISTS (SELECT 1 FROM {user_lastaccess} ul WHERE ul.userid = :u1 AND ul.courseid = c.id)
+                      OR EXISTS (
+                          SELECT 1 FROM {course_modules_completion} cmc
+                          JOIN {course_modules} cm ON cm.id = cmc.coursemoduleid
+                          WHERE cmc.userid = :u2 AND cm.course = c.id
+                      )
+                      OR EXISTS (
+                          SELECT 1 FROM {logstore_standard_log} l
+                          WHERE l.userid = :u3 AND l.courseid = c.id
+                      )
+                  )
+            ", ['u1' => $uid, 'u2' => $uid, 'u3' => $uid]);
+        }
 
-        foreach ($courses as $course) {
-            // get_course() reads through the course cache, so this stays cheap
-            // even though progress needs the full record.
-            $full = get_course($course->id);
-            $percent = \core_completion\progress::get_course_progress_percentage($full, $USER->id);
+        if (empty($courses)) {
+            $cache[$uid] = $default;
+            return $default;
+        }
 
-            $iscomplete = $DB->record_exists_select(
-                'course_completions',
-                'userid = :uid AND course = :cid AND timecompleted IS NOT NULL',
-                ['uid' => $USER->id, 'cid' => $course->id]
-            );
+        // 2. Pre-fetch user progress signals.
+        $quizzes = array_flip($DB->get_fieldset_sql("
+            SELECT DISTINCT q.id FROM {quiz_attempts} qa
+            JOIN {quiz} q ON q.id = qa.quiz
+            WHERE qa.userid = ? AND qa.state = 'finished'
+        ", [$uid]));
 
-            if ($iscomplete || ($percent !== null && $percent >= 100)) {
-                $tally['completed']++;
-            } else if ($percent !== null && $percent > 0) {
-                $tally['inprogress']++;
+        $assigns = array_flip($DB->get_fieldset_sql("
+            SELECT DISTINCT a.id FROM {assign_submission} s
+            JOIN {assign} a ON a.id = s.assignment
+            WHERE s.userid = ? AND s.status = 'submitted'
+        ", [$uid]));
+
+        $h5p = array_flip($DB->get_fieldset_sql("
+            SELECT DISTINCT h.id FROM {h5pactivity_attempts} ha
+            JOIN {h5pactivity} h ON h.id = ha.h5pactivityid
+            WHERE ha.userid = ? AND ha.completion = 1
+        ", [$uid]));
+
+        $scorm = array_flip($DB->get_fieldset_sql("
+            SELECT DISTINCT sa.scormid as id FROM {scorm_attempt} sa
+            WHERE sa.userid = ?
+        ", [$uid]));
+
+        $views = array_flip($DB->get_fieldset_sql("
+            SELECT DISTINCT contextinstanceid FROM {logstore_standard_log}
+            WHERE userid = ? AND contextlevel = ? AND action = 'viewed'
+        ", [$uid, CONTEXT_MODULE]));
+
+        $excluded = ['forum', 'chat', 'label', 'subsection'];
+
+        $totalacts = 0;
+        $doneacts = 0;
+        $completedcourses = 0;
+        $inprogresscourses = 0;
+
+        require_once($GLOBALS['CFG']->dirroot . '/lib/completionlib.php');
+
+        foreach ($courses as $c) {
+            $course = get_course($c->id);
+            $modinfo = get_fast_modinfo($course);
+            $completion = new \completion_info($course);
+
+            $ctotal = 0;
+            $cdone = 0;
+
+            foreach ($modinfo->get_cms() as $cm) {
+                if ($cm->deletioninprogress || in_array($cm->modname, $excluded, true)) {
+                    continue;
+                }
+                if (!$cm->visible) {
+                    continue;
+                }
+                $ctotal++;
+
+                $isdone = false;
+                if ($completion->is_enabled($cm) != COMPLETION_TRACKING_NONE) {
+                    $data = $completion->get_data($cm, true, $uid);
+                    $isdone = in_array((int) $data->completionstate,
+                        [COMPLETION_COMPLETE, COMPLETION_COMPLETE_PASS], true);
+                }
+                if (!$isdone) {
+                    if ($cm->modname === 'quiz' && isset($quizzes[$cm->instance])) {
+                        $isdone = true;
+                    } else if ($cm->modname === 'assign' && isset($assigns[$cm->instance])) {
+                        $isdone = true;
+                    } else if ($cm->modname === 'h5pactivity' && isset($h5p[$cm->instance])) {
+                        $isdone = true;
+                    } else if ($cm->modname === 'scorm' && isset($scorm[$cm->instance])) {
+                        $isdone = true;
+                    } else if (in_array($cm->modname, ['page', 'resource', 'url', 'book', 'folder']) && isset($views[$cm->id])) {
+                        $isdone = true;
+                    }
+                }
+                if ($isdone) {
+                    $cdone++;
+                }
+            }
+
+            if ($ctotal > 0) {
+                $totalacts += $ctotal;
+                $doneacts += $cdone;
+                if ($cdone >= $ctotal) {
+                    $completedcourses++;
+                } else if ($cdone > 0) {
+                    $inprogresscourses++;
+                }
             }
         }
 
-        $cache[$USER->id] = $tally;
-        return $tally;
+        $overallpct = $totalacts > 0 ? (int) round(($doneacts / $totalacts) * 100) : 0;
+
+        $res = [
+            'total_courses'       => count($courses),
+            'completed_courses'   => $completedcourses,
+            'inprogress_courses'  => $inprogresscourses,
+            'total_activities'    => $totalacts,
+            'done_activities'     => $doneacts,
+            'overall_progress'    => $overallpct,
+        ];
+
+        $cache[$uid] = $res;
+        return $res;
     }
 
     /**

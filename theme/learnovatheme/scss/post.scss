@@ -3401,6 +3401,17 @@ body.learnova-course-landing-page { overflow-x: clip; }
         margin: 0 0 8px;
     }
 
+    &__desc {
+        font-size:12.5px;
+        color: var(--learnova-stone);
+        line-height: 1.45;
+        margin: 0 0 10px;
+        display: -webkit-box;
+        -webkit-line-clamp:2 ;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
     &__meta {
         display: flex;
         align-items: center;
@@ -4337,6 +4348,8 @@ body.learnova-catalogue-page #page.drawers {
     &__sidebar {
         width: 240px;
         flex-shrink: 0;
+        position: sticky;
+        top: 80px;
     }
 
     &__main {
@@ -9973,6 +9986,24 @@ body.learnova-cm-embed {
        plain textarea here and the mock shows no format picker, so hide it. */
     select[name$="[format]"],
     label[for$="_format"] { display: none !important; }
+
+    /* Filemanager & confirmation modals inside the auto-sized iframe:
+       Because the iframe grows to the full document height (~2000px), YUI's
+       centered positioning and Bootstrap's vertically centered modal place
+       dialogues far below the visible viewport. Pin them near the top of the
+       form so clicking a course image to delete/replace it stays in view. */
+    .moodle-dialogue-base .moodle-dialogue {
+        top: 120px !important;
+    }
+    .modal.show {
+        .modal-dialog {
+            margin-top: 120px !important;
+        }
+        .modal-dialog-centered {
+            align-items: flex-start !important;
+            min-height: 0 !important;
+        }
+    }
 }
 
 /* ── Embedded native pages (Reports + Course Reuse tabs) ─────────────────────

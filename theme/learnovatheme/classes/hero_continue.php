@@ -267,8 +267,8 @@ class hero_continue {
      * @param int $userid
      * @return int|null
      */
-    private static function calculate_course_progress($course, int $userid): ?int {
-        global $DB;
+    public static function calculate_course_progress($course, int $userid): ?int {
+        global $DB, $CFG;
         if ($userid <= 0) {
             return null;
         }

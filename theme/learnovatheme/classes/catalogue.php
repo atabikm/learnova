@@ -479,7 +479,11 @@ class catalogue {
             'title' => format_string($course->get_formatted_name()),
             'tags'  => [],
         ];
-
+        $summary = trim(strip_tags((string) $course->summary));
+        if ($summary !== ''){
+            $card['hassummary'] = true;
+            $card['summary'] = $summary;
+        }
         // Category name → primary tag (always available).
         $cat = core_course_category::get($course->category, IGNORE_MISSING, true);
         if ($cat) {
@@ -536,7 +540,7 @@ class catalogue {
                 $card['progress']    = 100;
                 $card['footnote']    = get_string('catalogue_completed_note', 'theme_learnovatheme');
             } else {
-                $percent = \core_completion\progress::get_course_progress_percentage(get_course($cid), $USER->id);
+                $percent =\theme_learnovatheme\hero_continue::calculate_course_progress(get_course($cid), $USER->id);
                 if ($percent !== null) {
                     $card['hasprogress'] = true;
                     $card['progress']    = (int) round($percent);
@@ -595,9 +599,13 @@ class catalogue {
         } catch (\Throwable $e) {
             return 0;
         }
+        $excluded = ['forum', 'chat', 'label', 'subsection'];
         $count = 0;
         foreach ($modinfo->get_cms() as $cm) {
-            if ($cm->uservisible) {
+            if ($cm->deletioninprogress || in_array($cm->modname, $excluded, true)) {
+                continue;
+            }
+            if ($cm->uservisible){
                 $count++;
             }
         }
@@ -630,7 +638,7 @@ class catalogue {
             $stats[] = [
                 'num'  => self::compact($categories),
                 'lbl'  => get_string('catalogue_stat_categories', 'theme_learnovatheme'),
-                'tone' => '',
+                'tone' => 'teal',
             ];
         }
 
@@ -814,8 +822,7 @@ class catalogue {
      * Returns [[], []] for guests / not-logged-in.
      *
      * @return array{0: array<int, bool>, 1: array<int, bool>}
-     */
-    private static function user_status_maps(): array {
+     */    private static function user_status_maps(): array {
         global $DB, $USER;
 
         if (!isloggedin() || isguestuser()) {
@@ -825,6 +832,30 @@ class catalogue {
         $enrolled = [];
         foreach (array_keys(enrol_get_all_users_courses($USER->id, true, 'id')) as $id) {
             $enrolled[(int) $id] = true;
+        }
+
+        // Fallback for site admins or users with course activity outside formal enrolments.
+        if (empty($enrolled)) {
+            $accessed = $DB->get_fieldset_sql("
+                SELECT DISTINCT c.id
+                FROM {course} c
+                WHERE c.id > 1 AND c.visible = 1
+                  AND (
+                      EXISTS (SELECT 1 FROM {user_lastaccess} ul WHERE ul.userid = :u1 AND ul.courseid = c.id)
+                      OR EXISTS (
+                          SELECT 1 FROM {course_modules_completion} cmc
+                          JOIN {course_modules} cm ON cm.id = cmc.coursemoduleid
+                          WHERE cmc.userid = :u2 AND cm.course = c.id
+                      )
+                      OR EXISTS (
+                          SELECT 1 FROM {logstore_standard_log} l
+                          WHERE l.userid = :u3 AND l.courseid = c.id
+                      )
+                  )
+            ", ['u1' => $USER->id, 'u2' => $USER->id, 'u3' => $USER->id]);
+            foreach ($accessed as $id) {
+                $enrolled[(int) $id] = true;
+            }
         }
 
         $completed = [];
@@ -839,8 +870,18 @@ class catalogue {
             foreach ($rows as $c) {
                 $completed[(int) $c] = true;
             }
+            foreach (array_keys($enrolled) as $cid){
+                if (!isset($completed[$cid])){
+                    $pct=\theme_learnovatheme\hero_continue::calculate_course_progress(get_course($cid), $USER->id);
+                    if ($pct !==null && $pct >=100){
+                        $completed[$cid]=true;
+                    }
+                    
+                }
+            }
         }
         return [$enrolled, $completed];
+         
     }
 
     /**

@@ -48,10 +48,15 @@ define(['local_learnova_course/frame'], function(Frame) {
             Frame.fit(frame);
             Frame.observe(frame);
             // Re-veil on submit so the post-save redirect never flashes.
+            // Ignore inner modal/filemanager forms so deleting or updating a
+            // file inside a dialogue does not hide the iframe.
             try {
                 var doc = frame.contentDocument;
                 if (doc) {
-                    doc.addEventListener('submit', function() {
+                    doc.addEventListener('submit', function(e) {
+                        if (e.target && e.target.closest('.moodle-dialogue, .modal, .fp-select, .file-picker')) {
+                            return;
+                        }
                         frame.classList.add('is-loading');
                     }, true);
                 }

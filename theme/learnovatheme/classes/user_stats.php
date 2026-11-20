@@ -161,7 +161,7 @@ class user_stats {
      * }
      */
     public static function overall_progress(?int $userid = null): array {
-        global $USER, $DB;
+        global $USER, $DB, $CFG;
         $uid = $userid ?? (int) $USER->id;
         static $cache = [];
 
